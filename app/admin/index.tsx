@@ -6,10 +6,14 @@ interface Category {
     name: string
 }
 
+interface Payee {
+    id?: number
+    name: string
+}
+
 export function Index() {
 
     const [newCategory, setNewCategory] = useState<Category>({id: undefined, name: ''})
-    const [newPayee, setNewPayee] = useState<string>('')
 
     const onCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const categoryName = e.target.value
@@ -26,21 +30,43 @@ export function Index() {
             return
         }
 
-        categories.push(newCategory)
-        setNewCategory({id: categories.length + 1, name: newCategory.name})
+        if (newCategory.id) {
+            categories.push(newCategory)
+        } else {
+
+            categories.push({id: categories.length + 1, name: newCategory.name})
+        }
+        setNewCategory({id: undefined, name: ''})
     }
     const onCategoryClick = (category: Category) => {
         setNewCategory(category)
     }
 
-    const onAddPayee = (e: FormEvent<HTMLFormElement>) => {
+    const [newPayee, setNewPayee] = useState<Payee>({id: undefined, name: ''})
+    const onPayeeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const payeeName = e.target.value
+
+        if (!payeeName) {
+            setNewPayee({id: undefined, name: payeeName})
+        } else {
+            setNewPayee({...newPayee, name: payeeName})
+        }
+    }
+    const onPayeeSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!newPayee) {
             return
         }
 
-        payees.push({id: payees.length + 1, name: newPayee})
-        setNewPayee('')
+        if (newPayee.id) {
+            payees.push(newPayee)
+        } else {
+            payees.push({id: payees.length + 1, name: newPayee.name})
+        }
+        setNewPayee({id: undefined, name: ''})
+    }
+    const onPayeeClick = (payee: Payee) => {
+        setNewPayee(payee)
     }
 
     return (
@@ -65,24 +91,29 @@ export function Index() {
                     </form>
                     <ul>
                         {categories.map(category => (
-                            <li key={category.id} onClick={() => onCategoryClick(category)}>{category.name}</li>
+                            <li key={category.id}
+                                onClick={() => onCategoryClick(category)}>{category.name}</li>
                         ))}
                     </ul>
 
                     <h2>Payees</h2>
-                    <form onSubmit={onAddPayee}>
+                    <form onSubmit={onPayeeSubmit}>
                         <input
                             type="text"
                             name="payee"
                             placeholder="Add payee..."
                             className="border-1 border-gray-200 rounded-md p-1 mx-2"
-                            value={newPayee}
-                            onChange={(e) => setNewPayee(e.target.value)}/>
-                        <button className="cursor-pointer" type="submit"></button>
+                            value={newPayee.name}
+                            onChange={onPayeeChange}/>
+                        {newPayee.name &&
+                            <button className="cursor-pointer" type="submit">
+                                {newPayee.id ? <FaRegSave/> : <FaPlusCircle/>}
+                            </button>
+                        }
                     </form>
                     <ul>
                         {payees.map(payee => (
-                            <li key={payee.id}>{payee.name}</li>
+                            <li key={payee.id} onClick={() => onPayeeClick(payee)}>{payee.name}</li>
                         ))}
                     </ul>
 
@@ -115,7 +146,7 @@ const categories: Category[] = [
     }
 ]
 
-const payees = [
+const payees: Payee[] = [
     {
         id: 1,
         name: 'Tim Hortons'
