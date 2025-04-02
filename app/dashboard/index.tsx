@@ -1,4 +1,4 @@
-export function Dashboard() {
+export function Index() {
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("en-CA")
   }
