@@ -1,18 +1,36 @@
-import {type FormEvent, type FormEventHandler, useState} from 'react'
+import React, {type FormEvent, useState} from 'react'
+import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
+
+interface Category {
+    id?: number
+    name: string
+}
 
 export function Index() {
 
-    const [newCategory, setNewCategory] = useState<string>('')
+    const [newCategory, setNewCategory] = useState<Category>({id: undefined, name: ''})
     const [newPayee, setNewPayee] = useState<string>('')
 
-    const onAddCategory = (e: FormEvent<HTMLFormElement>) => {
+    const onCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const categoryName = e.target.value
+
+        if (!categoryName) {
+            setNewCategory({id: undefined, name: categoryName})
+        } else {
+            setNewCategory({...newCategory, name: categoryName})
+        }
+    }
+    const onCategorySubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!newCategory) {
             return
         }
 
-        categories.push({id: categories.length + 1, name: newCategory})
-        setNewCategory('')
+        categories.push(newCategory)
+        setNewCategory({id: categories.length + 1, name: newCategory.name})
+    }
+    const onCategoryClick = (category: Category) => {
+        setNewCategory(category)
     }
 
     const onAddPayee = (e: FormEvent<HTMLFormElement>) => {
@@ -31,19 +49,23 @@ export function Index() {
                 <header className="flex flex-col items-center gap-9">
 
                     <h2>Categories</h2>
-                    <form onSubmit={onAddCategory}>
+                    <form onSubmit={onCategorySubmit}>
                         <input
                             type="text"
                             name="category"
                             placeholder="Add category..."
                             className="border-1 border-gray-200 rounded-md p-1 mx-2"
-                            value={newCategory}
-                            onChange={(e) => setNewCategory(e.target.value)}/>
-                        {newCategory && <button className="cursor-pointer" type="submit">⊕</button>}
+                            value={newCategory.name}
+                            onChange={onCategoryChange}/>
+                        {newCategory.name &&
+                            <button className="cursor-pointer" type="submit">
+                                {newCategory.id ? <FaRegSave/> : <FaPlusCircle/>}
+                            </button>
+                        }
                     </form>
                     <ul>
                         {categories.map(category => (
-                            <li key={category.id}>{category.name}</li>
+                            <li key={category.id} onClick={() => onCategoryClick(category)}>{category.name}</li>
                         ))}
                     </ul>
 
@@ -56,7 +78,7 @@ export function Index() {
                             className="border-1 border-gray-200 rounded-md p-1 mx-2"
                             value={newPayee}
                             onChange={(e) => setNewPayee(e.target.value)}/>
-                        <button className="cursor-pointer" type="submit">⊕</button>
+                        <button className="cursor-pointer" type="submit"></button>
                     </form>
                     <ul>
                         {payees.map(payee => (
@@ -70,7 +92,7 @@ export function Index() {
     )
 }
 
-const categories = [
+const categories: Category[] = [
     {
         id: 1,
         name: '☕️ Coffee/Teas'
