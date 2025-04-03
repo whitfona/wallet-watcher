@@ -2,6 +2,8 @@ import {AllCommunityModule, ModuleRegistry, themeBalham, colorSchemeLightCold} f
 import {AgGridReact, type AgGridReactProps} from 'ag-grid-react'
 import React, {useMemo, useState} from 'react'
 import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
+import {categories, expenses} from '~/fake-data'
+import {CgCloseO} from 'react-icons/cg'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
@@ -27,6 +29,7 @@ export function Index() {
         editable: true, // TODO: Handle these changes
     }), [])
 
+    const [showAddForm, setShowAddForm] = useState(false)
     const inflowsTotal = expenses.reduce((acc, currentValue) => acc + Number(currentValue.inflow), 0)
     const outflowsTotal = expenses.reduce((acc, currentValue) => acc + Number(currentValue.outflow), 0)
     const negativeMonthlyTotal = (inflowsTotal - outflowsTotal) < 0
@@ -62,13 +65,36 @@ export function Index() {
                 </div>
             </div>
             <div className="flex flex-row gap-4 border-t border-gray-300 py-2 px-4 text-sm">
-                <div className="text-blue-700 cursor-pointer hover:text-blue-500"><FaPlusCircle
-                    className="inline-block"/> Add Transaction
-                </div>
-                <div className="text-blue-700 cursor-pointer hover:text-blue-500"><FaRegSave
-                    className="inline-block"/> File Import
+                <button className="flex items-center gap-1 text-blue-700 cursor-pointer hover:text-blue-500"
+                        onClick={() => setShowAddForm(true)}>
+                    <FaPlusCircle className="inline-block"/>
+                    Add Transaction
+                </button>
+                <div className="flex items-center gap-1 text-blue-700 cursor-pointer hover:text-blue-500">
+                    <FaRegSave className="inline-block"/>
+                    File Import
                 </div>
             </div>
+            {showAddForm && <form className="flex flex-row flex-wrap gap-2 mb-2 px-4">
+                <input className="border border-gray-400 p-2 text-xs" type="date"/>
+                <input className="border border-gray-400 p-2 text-xs" placeholder="Enter account..." type="text"/>
+                <input className="border border-gray-400 p-2 text-xs" placeholder="Enter payee..." type="text"/>
+                <select className="border border-gray-400 p-2 text-xs">
+                    <option value="null">Enter Category...</option>
+                    {categories.map(category => (
+                        <option key={category.id} value={category.id}>{category.name}</option>
+                    ))}
+                </select>
+                <input className="border border-gray-400 p-2 text-xs" placeholder="Enter memo..." type="text"/>
+                <input className="border border-gray-400 p-2 text-xs" placeholder="Enter outfow..." type="number"/>
+                <input className="border border-gray-400 p-2 text-xs" placeholder="Enter infow..." type="number"/>
+                <button className="cursor-pointer" type="submit">
+                    <FaPlusCircle/>
+                </button>
+                <button className="cursor-pointer" type="button" onClick={() => setShowAddForm(false)}>
+                    <CgCloseO/>
+                </button>
+            </form>}
             <div>
                 <div>
                     <AgGridReact
@@ -87,169 +113,3 @@ export function Index() {
         </main>
     )
 }
-
-const expenses = [
-    {
-        id: 1,
-        date: '2025-04-02T12:51:34.361Z',
-        account: 'Chequing',
-        payee: 'Tim Hortons',
-        category: '☕️ Coffee/Teas',
-        memo: 'Coffee at the airport',
-        outflow: 3,
-        inflow: null
-    },
-    {
-        id: 2,
-        date: '2025-04-02T08:05:31.254Z',
-        account: 'Chequing',
-        payee: 'Direct Deposit - Acme Corp',
-        category: '💰 Income',
-        memo: 'Bi-weekly salary',
-        outflow: null,
-        inflow: 2150.75
-    },
-    {
-        id: 3,
-        date: '2025-04-01T09:23:14.782Z',
-        account: 'Chequing',
-        payee: 'Fortinos',
-        category: '🛒 Groceries',
-        memo: 'Weekly grocery shopping',
-        outflow: 87.43,
-        inflow: null
-    },
-    {
-        id: 4,
-        date: '2025-03-29T18:45:52.101Z',
-        account: 'Saving',
-        payee: 'Netflix',
-        category: '🎬 Entertainment',
-        memo: 'Monthly subscription',
-        outflow: 15.99,
-        inflow: null
-    },
-    {
-        id: 5,
-        date: '2025-03-31T14:12:09.471Z',
-        account: 'Saving',
-        payee: 'Uber',
-        category: '🚗 Transportation',
-        memo: 'Ride to downtown meeting',
-        outflow: 24.50,
-        inflow: null
-    },
-    {
-        id: 6,
-        date: '2025-04-16T08:05:31.254Z',
-        account: 'Chequing',
-        payee: 'Direct Deposit - Acme Corp',
-        category: '💰 Income',
-        memo: 'Bi-weekly salary',
-        outflow: null,
-        inflow: 2150.75
-    },
-]
-
-// const expenses = [
-//     {
-//         id: 1,
-//         date: '2025-04-02T12:51:34.361Z',
-//         account: {
-//             id: 1,
-//             name: 'Chequing'
-//         },
-//         payee: {
-//             id: 1,
-//             name: 'Tim Hortons'
-//         },
-//         category: {
-//             id: 1,
-//             name: 'Coffee/Teas',
-//             icon: '☕️'
-//         },
-//         memo: 'Coffee at the airport',
-//         outflow: 3,
-//         inflow: null
-//     },
-//     {
-//         id: 2,
-//         date: '2025-04-01T09:23:14.782Z',
-//         account: {
-//             id: 1,
-//             name: 'Chequing'
-//         },
-//         payee: {
-//             id: 3,
-//             name: 'Fortinos'
-//         },
-//         category: {
-//             id: 4,
-//             name: 'Groceries',
-//             icon: '🛒'
-//         },
-//         memo: 'Weekly grocery shopping',
-//         outflow: 87.43,
-//         inflow: null
-//     },
-//     {
-//         id: 3,
-//         date: '2025-03-29T18:45:52.101Z',
-//         account: {
-//             id: 2,
-//             name: 'Saving'
-//         },
-//         payee: {
-//             id: 7,
-//             name: 'Netflix'
-//         },
-//         category: {
-//             id: 9,
-//             name: 'Entertainment',
-//             icon: '🎬'
-//         },
-//         memo: 'Monthly subscription',
-//         outflow: 15.99,
-//         inflow: null
-//     },
-//     {
-//         id: 4,
-//         date: '2025-03-31T14:12:09.471Z',
-//         account: {
-//             id: 2,
-//             name: 'Saving'
-//         },
-//         payee: {
-//             id: 12,
-//             name: 'Uber'
-//         },
-//         category: {
-//             id: 5,
-//             name: 'Transportation',
-//             icon: '🚗'
-//         },
-//         memo: 'Ride to downtown meeting',
-//         outflow: 24.50,
-//         inflow: null
-//     },
-//     {
-//         id: 5,
-//         date: '2025-04-02T08:05:31.254Z',
-//         account: {
-//             id: 1,
-//             name: 'Chequing'
-//         },
-//         payee: {
-//             id: 9,
-//             name: 'Direct Deposit - Acme Corp'
-//         },
-//         category: {
-//             id: 2,
-//             name: 'Income',
-//             icon: '💰'
-//         },
-//         memo: 'Bi-weekly salary',
-//         outflow: null,
-//         inflow: 2150.75
-//     },
-// ]

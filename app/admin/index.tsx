@@ -1,20 +1,7 @@
 import React, {type FormEvent, useState} from 'react'
 import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
-
-interface Category {
-    id?: number
-    name: string
-}
-
-interface Payee {
-    id?: number
-    name: string
-}
-
-interface Account {
-    id?: number
-    name: string
-}
+import type {Account, Category, Payee} from '~/types/common'
+import {accounts, payees, categories} from '~/fake-data'
 
 export function Index() {
 
@@ -179,64 +166,3 @@ export function Index() {
         </main>
     )
 }
-
-const categories: Category[] = [
-    {
-        id: 1,
-        name: '☕️ Coffee/Teas'
-    },
-    {
-        id: 2,
-        name: '🛒 Groceries',
-    },
-    {
-        id: 3,
-        name: '🎬 Entertainment',
-    },
-    {
-        id: 4,
-        name: '🚗 Transportation',
-    },
-    {
-        id: 5,
-        name: '💰 Income',
-    },
-]
-
-const payees: Payee[] = [
-    {
-        id: 1,
-        name: 'Tim Hortons'
-    },
-    {
-        id: 2,
-        name: 'Fortinos',
-    },
-    {
-        id: 3,
-        name: 'Netflix',
-    },
-    {
-        id: 4,
-        name: 'Uber',
-    },
-    {
-        id: 5,
-        name: 'Acme Corp',
-    },
-]
-
-const accounts: Account[] = [
-    {
-        id: 1,
-        name: 'Chequing'
-    },
-    {
-        id: 2,
-        name: 'Saving',
-    },
-    {
-        id: 3,
-        name: 'VISA'
-    },
-]
