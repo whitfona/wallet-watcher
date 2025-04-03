@@ -11,6 +11,11 @@ interface Payee {
     name: string
 }
 
+interface Account {
+    id?: number
+    name: string
+}
+
 export function Index() {
 
     const [newCategory, setNewCategory] = useState<Category>({id: undefined, name: ''})
@@ -69,18 +74,45 @@ export function Index() {
         setNewPayee(payee)
     }
 
+    const [newAccount, setNewAccount] = useState<Account>({id: undefined, name: ''})
+    const onAccountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const payeeName = e.target.value
+
+        if (!payeeName) {
+            setNewAccount({id: undefined, name: payeeName})
+        } else {
+            setNewAccount({...newAccount, name: payeeName})
+        }
+    }
+    const onAccountSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        if (!newAccount) {
+            return
+        }
+
+        if (newAccount.id) {
+            accounts.push(newAccount)
+        } else {
+            accounts.push({id: accounts.length + 1, name: newAccount.name})
+        }
+        setNewAccount({id: undefined, name: ''})
+    }
+    const onAccountClick = (account: Account) => {
+        setNewAccount(account)
+    }
+
     return (
         <main className="flex items-center justify-center pt-16 pb-4">
-            <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
-                <header className="flex flex-col items-center gap-9">
+            <div className="flex-1 flex flex-col items-center gap-8 min-h-0">
 
-                    <h2>Categories</h2>
+                <section>
+                    <h2 className="font-bold">Categories</h2>
                     <form onSubmit={onCategorySubmit}>
                         <input
                             type="text"
                             name="category"
                             placeholder="Add category..."
-                            className="border-1 border-gray-200 rounded-md p-1 mx-2"
+                            className="border-1 border-gray-200 rounded-md p-1 mr-2"
                             value={newCategory.name}
                             onChange={onCategoryChange}/>
                         {newCategory.name &&
@@ -95,14 +127,16 @@ export function Index() {
                                 onClick={() => onCategoryClick(category)}>{category.name}</li>
                         ))}
                     </ul>
+                </section>
 
-                    <h2>Payees</h2>
+                <section>
+                    <h2 className="font-bold">Payees</h2>
                     <form onSubmit={onPayeeSubmit}>
                         <input
                             type="text"
                             name="payee"
                             placeholder="Add payee..."
-                            className="border-1 border-gray-200 rounded-md p-1 mx-2"
+                            className="border-1 border-gray-200 rounded-md p-1 mr-2"
                             value={newPayee.name}
                             onChange={onPayeeChange}/>
                         {newPayee.name &&
@@ -116,8 +150,31 @@ export function Index() {
                             <li key={payee.id} onClick={() => onPayeeClick(payee)}>{payee.name}</li>
                         ))}
                     </ul>
+                </section>
 
-                </header>
+                <section>
+                    <h2 className="font-bold">Accounts</h2>
+                    <form onSubmit={onAccountSubmit}>
+                        <input
+                            type="text"
+                            name="account"
+                            placeholder="Add account..."
+                            className="border-1 border-gray-200 rounded-md p-1 mr-2"
+                            value={newAccount.name}
+                            onChange={onAccountChange}/>
+                        {newAccount.name &&
+                            <button className="cursor-pointer" type="submit">
+                                {newAccount.id ? <FaRegSave/> : <FaPlusCircle/>}
+                            </button>
+                        }
+                    </form>
+                    <ul>
+                        {accounts.map(account => (
+                            <li key={account.id} onClick={() => onAccountClick(account)}>{account.name}</li>
+                        ))}
+                    </ul>
+                </section>
+
             </div>
         </main>
     )
@@ -167,4 +224,15 @@ const payees: Payee[] = [
         id: 5,
         name: 'Acme Corp',
     }
+]
+
+const accounts: Account[] = [
+    {
+        id: 1,
+        name: 'Chequing'
+    },
+    {
+        id: 2,
+        name: 'Saving',
+    },
 ]
