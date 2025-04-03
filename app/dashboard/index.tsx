@@ -27,6 +27,10 @@ export function Index() {
         editable: true, // TODO: Handle these changes
     }), [])
 
+    const inflowsTotal = expenses.reduce((acc, currentValue) => acc + Number(currentValue.inflow), 0)
+    const outflowsTotal = expenses.reduce((acc, currentValue) => acc + Number(currentValue.outflow), 0)
+    const negativeMonthlyTotal = (inflowsTotal - outflowsTotal) < 0
+
     const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString('en-CA')
     }
@@ -41,23 +45,23 @@ export function Index() {
             <header className="flex flex-col items-center gap-9">
                 <h1>WalletWatcher</h1>
             </header>
-            <div className="flex flex-row gap-4 border-t border-gray-300 p-2">
+            <div className="flex flex-row gap-4 border-t border-gray-300 p-4">
                 <div>
-                    <p className="text-green-700 text-xl">$1,000</p>
+                    <p className="text-green-600 text-xl">{formatCurrency(inflowsTotal)}</p>
                     <p className="text-xs text-gray-500">Inflows</p>
                 </div>
                 <p>-</p>
                 <div>
-                    <p className="text-xl">$1,500</p>
+                    <p className="text-xl">{formatCurrency(outflowsTotal)}</p>
                     <p className="text-xs text-gray-500">Outflows</p>
                 </div>
                 <p>=</p>
                 <div>
-                    <p className="text-red-600 text-xl">$500</p>
+                    <p className={`${negativeMonthlyTotal ? 'text-red-600' : 'text-green-600'} text-xl`}>{formatCurrency(inflowsTotal - outflowsTotal)}</p>
                     <p className="text-xs text-gray-500">Monthly Total</p>
                 </div>
             </div>
-            <div className="flex flex-row gap-4 border-t border-gray-300 p-2 text-sm">
+            <div className="flex flex-row gap-4 border-t border-gray-300 py-2 px-4 text-sm">
                 <div className="text-blue-700 cursor-pointer hover:text-blue-500"><FaPlusCircle
                     className="inline-block"/> Add Transaction
                 </div>
@@ -97,6 +101,16 @@ const expenses = [
     },
     {
         id: 2,
+        date: '2025-04-02T08:05:31.254Z',
+        account: 'Chequing',
+        payee: 'Direct Deposit - Acme Corp',
+        category: '💰 Income',
+        memo: 'Bi-weekly salary',
+        outflow: null,
+        inflow: 2150.75
+    },
+    {
+        id: 3,
         date: '2025-04-01T09:23:14.782Z',
         account: 'Chequing',
         payee: 'Fortinos',
@@ -106,7 +120,7 @@ const expenses = [
         inflow: null
     },
     {
-        id: 3,
+        id: 4,
         date: '2025-03-29T18:45:52.101Z',
         account: 'Saving',
         payee: 'Netflix',
@@ -116,7 +130,7 @@ const expenses = [
         inflow: null
     },
     {
-        id: 4,
+        id: 5,
         date: '2025-03-31T14:12:09.471Z',
         account: 'Saving',
         payee: 'Uber',
@@ -126,8 +140,8 @@ const expenses = [
         inflow: null
     },
     {
-        id: 5,
-        date: '2025-04-02T08:05:31.254Z',
+        id: 6,
+        date: '2025-04-16T08:05:31.254Z',
         account: 'Chequing',
         payee: 'Direct Deposit - Acme Corp',
         category: '💰 Income',
