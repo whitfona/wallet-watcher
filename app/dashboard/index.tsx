@@ -1,6 +1,7 @@
 import {AllCommunityModule, ModuleRegistry, themeBalham, colorSchemeLightCold} from 'ag-grid-community'
 import {AgGridReact, type AgGridReactProps} from 'ag-grid-react'
-import {useMemo, useState} from 'react'
+import React, {useMemo, useState} from 'react'
+import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
@@ -36,25 +37,47 @@ export function Index() {
         return new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format(currency)
     }
     return (
-        <main className="flex items-center justify-center pt-16 pb-4">
-            <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
-                <header className="flex flex-col items-center gap-9">
-                    <h1>WalletWatcher</h1>
-                </header>
-                <div className="w-full space-y-6 px-4">
-                    <div>
-                        <AgGridReact
-                            autoSizeStrategy={{
-                                type: 'fitGridWidth'
-                            }}
-                            domLayout="autoHeight"
-                            rowData={rowData}
-                            columnDefs={colDefs}
-                            theme={theme}
-                            defaultColDef={defaultColDef}
-                            onCellValueChanged={event => console.log(`New Cell Value: ${event.value}`)}
-                        />
-                    </div>
+        <main className="pt-16 pb-4">
+            <header className="flex flex-col items-center gap-9">
+                <h1>WalletWatcher</h1>
+            </header>
+            <div className="flex flex-row gap-4 border-t border-gray-300 p-2">
+                <div>
+                    <p className="text-green-700 text-xl">$1,000</p>
+                    <p className="text-xs text-gray-500">Inflows</p>
+                </div>
+                <p>-</p>
+                <div>
+                    <p className="text-xl">$1,500</p>
+                    <p className="text-xs text-gray-500">Outflows</p>
+                </div>
+                <p>=</p>
+                <div>
+                    <p className="text-red-600 text-xl">$500</p>
+                    <p className="text-xs text-gray-500">Monthly Total</p>
+                </div>
+            </div>
+            <div className="flex flex-row gap-4 border-t border-gray-300 p-2 text-sm">
+                <div className="text-blue-700 cursor-pointer hover:text-blue-500"><FaPlusCircle
+                    className="inline-block"/> Add Transaction
+                </div>
+                <div className="text-blue-700 cursor-pointer hover:text-blue-500"><FaRegSave
+                    className="inline-block"/> File Import
+                </div>
+            </div>
+            <div>
+                <div>
+                    <AgGridReact
+                        autoSizeStrategy={{
+                            type: 'fitGridWidth'
+                        }}
+                        domLayout="autoHeight"
+                        rowData={rowData}
+                        columnDefs={colDefs}
+                        theme={theme}
+                        defaultColDef={defaultColDef}
+                        onCellValueChanged={event => console.log(`New Cell Value: ${event.value}`)}
+                    />
                 </div>
             </div>
         </main>
