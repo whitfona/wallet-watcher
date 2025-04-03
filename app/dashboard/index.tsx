@@ -44,11 +44,11 @@ export function Index() {
         return new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format(currency)
     }
     return (
-        <main className="pt-16 pb-4">
-            <header className="flex flex-col items-center gap-9">
-                <h1>WalletWatcher</h1>
+        <main className="pt-8 pb-4">
+            <header>
+                <h1 className="text-center text-2xl">WalletWatcher</h1>
             </header>
-            <div className="flex flex-row gap-4 border-t border-gray-300 p-4">
+            <div className="flex flex-row gap-4 border-t border-gray-300 p-4 mt-8">
                 <div>
                     <p className="text-green-600 text-xl">{formatCurrency(inflowsTotal)}</p>
                     <p className="text-xs text-gray-500">Inflows</p>
