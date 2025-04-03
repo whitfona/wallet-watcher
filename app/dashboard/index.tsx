@@ -19,6 +19,7 @@ export function Index() {
                         <thead>
                         <tr>
                             <th>Date</th>
+                            <th>Account</th>
                             <th>Payee</th>
                             <th>Category</th>
                             <th>Memo</th>
@@ -30,6 +31,7 @@ export function Index() {
                         {expenses.map((expense) => (
                             <tr key={expense.id}>
                                 <td>{formatDate(expense.date)}</td>
+                                <td>{expense.account.name}</td>
                                 <td>{expense.payee.name}</td>
                                 <td>{expense.category.icon} {expense.category.name}</td>
                                 <td>{expense.memo}</td>
@@ -49,6 +51,10 @@ const expenses = [
     {
         id: 1,
         date: '2025-04-02T12:51:34.361Z',
+        account: {
+            id: 1,
+            name: 'Chequing'
+        },
         payee: {
             id: 1,
             name: 'Tim Hortons'
@@ -65,6 +71,10 @@ const expenses = [
     {
         id: 2,
         date: '2025-04-01T09:23:14.782Z',
+        account: {
+            id: 1,
+            name: 'Chequing'
+        },
         payee: {
             id: 3,
             name: 'Fortinos'
@@ -81,6 +91,10 @@ const expenses = [
     {
         id: 3,
         date: '2025-03-29T18:45:52.101Z',
+        account: {
+            id: 2,
+            name: 'Saving'
+        },
         payee: {
             id: 7,
             name: 'Netflix'
@@ -97,6 +111,10 @@ const expenses = [
     {
         id: 4,
         date: '2025-03-31T14:12:09.471Z',
+        account: {
+            id: 2,
+            name: 'Saving'
+        },
         payee: {
             id: 12,
             name: 'Uber'
@@ -113,6 +131,10 @@ const expenses = [
     {
         id: 5,
         date: '2025-04-02T08:05:31.254Z',
+        account: {
+            id: 1,
+            name: 'Chequing'
+        },
         payee: {
             id: 9,
             name: 'Direct Deposit - Acme Corp'
@@ -125,5 +147,5 @@ const expenses = [
         memo: 'Bi-weekly salary',
         outflow: null,
         inflow: 2150.75
-    }
+    },
 ]

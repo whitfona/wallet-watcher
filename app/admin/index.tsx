@@ -200,7 +200,7 @@ const categories: Category[] = [
     {
         id: 5,
         name: '💰 Income',
-    }
+    },
 ]
 
 const payees: Payee[] = [
@@ -223,7 +223,7 @@ const payees: Payee[] = [
     {
         id: 5,
         name: 'Acme Corp',
-    }
+    },
 ]
 
 const accounts: Account[] = [
@@ -234,5 +234,9 @@ const accounts: Account[] = [
     {
         id: 2,
         name: 'Saving',
+    },
+    {
+        id: 3,
+        name: 'VISA'
     },
 ]
