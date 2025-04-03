@@ -1,4 +1,31 @@
+import {AllCommunityModule, ModuleRegistry, themeBalham, colorSchemeLightCold} from 'ag-grid-community'
+import {AgGridReact, type AgGridReactProps} from 'ag-grid-react'
+import {useMemo, useState} from 'react'
+
 export function Index() {
+    ModuleRegistry.registerModules([AllCommunityModule])
+
+    const theme = themeBalham.withPart(colorSchemeLightCold)
+
+    const [rowData, setRowData] = useState(expenses)
+
+    const [colDefs, setColDefs] = useState<AgGridReactProps['columnDefs']>([
+        {
+            field: 'date', valueFormatter: (params: any) => formatDate(params.value)
+        },
+        {field: 'account'},
+        {field: 'payee'},
+        {field: 'category'},
+        {field: 'memo'},
+        {field: 'outflow', valueFormatter: (params: any) => formatCurrency(params.value)},
+        {field: 'inflow', valueFormatter: (params: any) => formatCurrency(params.value)},
+    ])
+
+    const defaultColDef = useMemo(() => ({
+        filter: true,
+        editable: true, // TODO: Handle these changes
+    }), [])
+
     const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString('en-CA')
     }
@@ -15,32 +42,19 @@ export function Index() {
                     <h1>WalletWatcher</h1>
                 </header>
                 <div className="w-full space-y-6 px-4">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Account</th>
-                            <th>Payee</th>
-                            <th>Category</th>
-                            <th>Memo</th>
-                            <th>Outflow</th>
-                            <th>Inflow</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {expenses.map((expense) => (
-                            <tr key={expense.id}>
-                                <td>{formatDate(expense.date)}</td>
-                                <td>{expense.account.name}</td>
-                                <td>{expense.payee.name}</td>
-                                <td>{expense.category.icon} {expense.category.name}</td>
-                                <td>{expense.memo}</td>
-                                <td>{formatCurrency(expense.outflow)}</td>
-                                <td>{formatCurrency(expense.inflow)}</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                    <div>
+                        <AgGridReact
+                            autoSizeStrategy={{
+                                type: 'fitGridWidth'
+                            }}
+                            domLayout="autoHeight"
+                            rowData={rowData}
+                            columnDefs={colDefs}
+                            theme={theme}
+                            defaultColDef={defaultColDef}
+                            onCellValueChanged={event => console.log(`New Cell Value: ${event.value}`)}
+                        />
+                    </div>
                 </div>
             </div>
         </main>
@@ -51,19 +65,9 @@ const expenses = [
     {
         id: 1,
         date: '2025-04-02T12:51:34.361Z',
-        account: {
-            id: 1,
-            name: 'Chequing'
-        },
-        payee: {
-            id: 1,
-            name: 'Tim Hortons'
-        },
-        category: {
-            id: 1,
-            name: 'Coffee/Teas',
-            icon: '☕️'
-        },
+        account: 'Chequing',
+        payee: 'Tim Hortons',
+        category: '☕️ Coffee/Teas',
         memo: 'Coffee at the airport',
         outflow: 3,
         inflow: null
@@ -71,19 +75,9 @@ const expenses = [
     {
         id: 2,
         date: '2025-04-01T09:23:14.782Z',
-        account: {
-            id: 1,
-            name: 'Chequing'
-        },
-        payee: {
-            id: 3,
-            name: 'Fortinos'
-        },
-        category: {
-            id: 4,
-            name: 'Groceries',
-            icon: '🛒'
-        },
+        account: 'Chequing',
+        payee: 'Fortinos',
+        category: '🛒 Groceries',
         memo: 'Weekly grocery shopping',
         outflow: 87.43,
         inflow: null
@@ -91,19 +85,9 @@ const expenses = [
     {
         id: 3,
         date: '2025-03-29T18:45:52.101Z',
-        account: {
-            id: 2,
-            name: 'Saving'
-        },
-        payee: {
-            id: 7,
-            name: 'Netflix'
-        },
-        category: {
-            id: 9,
-            name: 'Entertainment',
-            icon: '🎬'
-        },
+        account: 'Saving',
+        payee: 'Netflix',
+        category: '🎬 Entertainment',
         memo: 'Monthly subscription',
         outflow: 15.99,
         inflow: null
@@ -111,19 +95,9 @@ const expenses = [
     {
         id: 4,
         date: '2025-03-31T14:12:09.471Z',
-        account: {
-            id: 2,
-            name: 'Saving'
-        },
-        payee: {
-            id: 12,
-            name: 'Uber'
-        },
-        category: {
-            id: 5,
-            name: 'Transportation',
-            icon: '🚗'
-        },
+        account: 'Saving',
+        payee: 'Uber',
+        category: '🚗 Transportation',
         memo: 'Ride to downtown meeting',
         outflow: 24.50,
         inflow: null
@@ -131,21 +105,114 @@ const expenses = [
     {
         id: 5,
         date: '2025-04-02T08:05:31.254Z',
-        account: {
-            id: 1,
-            name: 'Chequing'
-        },
-        payee: {
-            id: 9,
-            name: 'Direct Deposit - Acme Corp'
-        },
-        category: {
-            id: 2,
-            name: 'Income',
-            icon: '💰'
-        },
+        account: 'Chequing',
+        payee: 'Direct Deposit - Acme Corp',
+        category: '💰 Income',
         memo: 'Bi-weekly salary',
         outflow: null,
         inflow: 2150.75
     },
 ]
+
+// const expenses = [
+//     {
+//         id: 1,
+//         date: '2025-04-02T12:51:34.361Z',
+//         account: {
+//             id: 1,
+//             name: 'Chequing'
+//         },
+//         payee: {
+//             id: 1,
+//             name: 'Tim Hortons'
+//         },
+//         category: {
+//             id: 1,
+//             name: 'Coffee/Teas',
+//             icon: '☕️'
+//         },
+//         memo: 'Coffee at the airport',
+//         outflow: 3,
+//         inflow: null
+//     },
+//     {
+//         id: 2,
+//         date: '2025-04-01T09:23:14.782Z',
+//         account: {
+//             id: 1,
+//             name: 'Chequing'
+//         },
+//         payee: {
+//             id: 3,
+//             name: 'Fortinos'
+//         },
+//         category: {
+//             id: 4,
+//             name: 'Groceries',
+//             icon: '🛒'
+//         },
+//         memo: 'Weekly grocery shopping',
+//         outflow: 87.43,
+//         inflow: null
+//     },
+//     {
+//         id: 3,
+//         date: '2025-03-29T18:45:52.101Z',
+//         account: {
+//             id: 2,
+//             name: 'Saving'
+//         },
+//         payee: {
+//             id: 7,
+//             name: 'Netflix'
+//         },
+//         category: {
+//             id: 9,
+//             name: 'Entertainment',
+//             icon: '🎬'
+//         },
+//         memo: 'Monthly subscription',
+//         outflow: 15.99,
+//         inflow: null
+//     },
+//     {
+//         id: 4,
+//         date: '2025-03-31T14:12:09.471Z',
+//         account: {
+//             id: 2,
+//             name: 'Saving'
+//         },
+//         payee: {
+//             id: 12,
+//             name: 'Uber'
+//         },
+//         category: {
+//             id: 5,
+//             name: 'Transportation',
+//             icon: '🚗'
+//         },
+//         memo: 'Ride to downtown meeting',
+//         outflow: 24.50,
+//         inflow: null
+//     },
+//     {
+//         id: 5,
+//         date: '2025-04-02T08:05:31.254Z',
+//         account: {
+//             id: 1,
+//             name: 'Chequing'
+//         },
+//         payee: {
+//             id: 9,
+//             name: 'Direct Deposit - Acme Corp'
+//         },
+//         category: {
+//             id: 2,
+//             name: 'Income',
+//             icon: '💰'
+//         },
+//         memo: 'Bi-weekly salary',
+//         outflow: null,
+//         inflow: 2150.75
+//     },
+// ]
