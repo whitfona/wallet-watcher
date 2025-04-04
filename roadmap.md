@@ -10,6 +10,7 @@
 - [ ] Allow user to upload an excel file of expenses
 - [ ] Only show expenses for the month
 - [ ] Allow user to visit previous/ future months
+- [ ] Add toasts for success and failures
 - [ ] Add AI to help with categorizing expenses (maybe?)
 - [ ] Allow user to view a range of months (maybe?)
 - [ ] Allow user to mass edit expenses (maybe?)
