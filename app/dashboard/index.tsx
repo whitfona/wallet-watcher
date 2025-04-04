@@ -2,8 +2,8 @@ import {AllCommunityModule, ModuleRegistry, themeBalham, colorSchemeLightCold} f
 import {AgGridReact, type AgGridReactProps} from 'ag-grid-react'
 import React, {type FormEvent, useEffect, useMemo, useState} from 'react'
 import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
-import {fakeCategories, fakeExpenses} from '~/fake-data'
-import type {Category, ExpenseRecord, ExpenseFormData} from '~/types/common'
+import {fakeAccounts, fakeCategories, fakeExpenses, fakePayees} from '~/fake-data'
+import type {Category, ExpenseRecord, ExpenseFormData, Account, Payee} from '~/types/common'
 import {TbCancel} from 'react-icons/tb'
 
 export function Index() {
@@ -11,10 +11,14 @@ export function Index() {
     const theme = themeBalham.withPart(colorSchemeLightCold)
 
     useEffect(() => {
+        setAccounts(fakeAccounts)
         setCategories(fakeCategories)
+        setPayees(fakePayees)
         setRowData(fakeExpenses)
     }, [])
+    const [accounts, setAccounts] = useState<Account[]>([])
     const [categories, setCategories] = useState<Category[]>([])
+    const [payees, setPayees] = useState<Payee[]>([])
 
     const [rowData, setRowData] = useState<ExpenseRecord[]>([])
 
@@ -66,11 +70,27 @@ export function Index() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value, type} = e.target
+        
+        const parsedValue = parseValue(value, type)
 
         setNewExpense(prevExpense => ({
             ...prevExpense,
-            [name]: type === 'number' ? (value ? Number(value) : null) : value
+            [name]: parsedValue
         }))
+    }
+
+    const parseValue = (value: string | number | null, type: string) => {
+        let parsedValue: number | string | null
+        if (type === 'number' || type === 'select-one') {
+            if (value === '') {
+                parsedValue = null
+            } else {
+                parsedValue = value ? Number(value) : null
+            }
+        } else {
+            parsedValue = value ?? null
+        }
+        return parsedValue
     }
 
     const handleSubmit = (e: FormEvent) => {
@@ -140,22 +160,20 @@ export function Index() {
                        name="date"
                        onChange={handleChange}
                 />
-                <input className="border border-gray-400 p-2 text-xs"
-                       placeholder="Enter account..."
-                       type="text"
-                       name="account"
-                       value={newExpense.account}
-                       onChange={handleChange}
-                />
-                <input className="border border-gray-400 p-2 text-xs"
-                       placeholder="Enter payee..."
-                       type="text"
-                       name="payee"
-                       value={newExpense.payee}
-                       onChange={handleChange}
-                />
-                <select className="border border-gray-400 p-2 text-xs">
-                    <option value="null">Enter Category...</option>
+                <select className="border border-gray-400 p-2 text-xs" name="account" onChange={handleChange}>
+                    <option value="null">Enter account...</option>
+                    {accounts.map(account => (
+                        <option key={account.id} value={account.id}>{account.name}</option>
+                    ))}
+                </select>
+                <select className="border border-gray-400 p-2 text-xs" name="payee" onChange={handleChange}>
+                    <option value="null">Enter payee...</option>
+                    {payees.map(payee => (
+                        <option key={payee.id} value={payee.id}>{payee.name}</option>
+                    ))}
+                </select>
+                <select className="border border-gray-400 p-2 text-xs" name="category" onChange={handleChange}>
+                    <option value="null">Enter category...</option>
                     {categories.map(category => (
                         <option key={category.id} value={category.id}>{category.name}</option>
                     ))}
@@ -168,14 +186,14 @@ export function Index() {
                        onChange={handleChange}
                 />
                 <input className="border border-gray-400 p-2 text-xs"
-                       placeholder="Enter outfow..."
+                       placeholder="Enter outflow..."
                        type="number"
                        name="outflow"
                        value={newExpense.outflow ?? ''}
                        onChange={handleChange}
                 />
                 <input className="border border-gray-400 p-2 text-xs"
-                       placeholder="Enter infow..."
+                       placeholder="Enter inflow..."
                        type="number"
                        name="inflow"
                        value={newExpense.inflow ?? ''}
