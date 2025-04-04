@@ -1,6 +1,6 @@
 import type {Account, Category, Expense, Payee} from '~/types/common'
 
-export const categories: Category[] = [
+export const fakeCategories: Category[] = [
     {
         id: 1,
         name: '☕️ Coffee/Teas'
@@ -23,7 +23,7 @@ export const categories: Category[] = [
     },
 ]
 
-export const payees: Payee[] = [
+export const fakePayees: Payee[] = [
     {
         id: 1,
         name: 'Tim Hortons'
@@ -46,7 +46,7 @@ export const payees: Payee[] = [
     },
 ]
 
-export const accounts: Account[] = [
+export const fakeAccounts: Account[] = [
     {
         id: 1,
         name: 'Chequing'
@@ -61,7 +61,7 @@ export const accounts: Account[] = [
     },
 ]
 
-export const expenses: Expense[] = [
+export const fakeExpenses: Expense[] = [
     {
         id: 1,
         date: '2025-04-02T12:51:34.361Z',

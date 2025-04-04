@@ -1,9 +1,19 @@
-import React, {type FormEvent, useState} from 'react'
+import React, {type FormEvent, useEffect, useState} from 'react'
 import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
 import type {Account, Category, Payee} from '~/types/common'
-import {accounts, payees, categories} from '~/fake-data'
+import {fakeAccounts, fakePayees, fakeCategories} from '~/fake-data'
+import {CgCloseO} from 'react-icons/cg'
 
 export function Index() {
+    const [accounts, setAccounts] = useState<Account[]>([])
+    const [categories, setCategories] = useState<Category[]>([])
+    const [payees, setPayees] = useState<Payee[]>([])
+
+    useEffect(() => {
+        setAccounts(fakeAccounts)
+        setCategories(fakeCategories)
+        setPayees(fakePayees)
+    }, [])
 
     const [newCategory, setNewCategory] = useState<Category>({id: undefined, name: ''})
 
@@ -23,15 +33,20 @@ export function Index() {
         }
 
         if (newCategory.id) {
-            categories.push(newCategory)
+            setCategories([...categories, newCategory])
         } else {
 
-            categories.push({id: categories.length + 1, name: newCategory.name})
+            setCategories([...categories, {id: categories.length + 1, name: newCategory.name}])
         }
         setNewCategory({id: undefined, name: ''})
     }
     const onCategoryClick = (category: Category) => {
         setNewCategory(category)
+    }
+    const onCategoryDelete = (categoryId: number) => {
+        const categoriesAfterRemoval = categories.filter(category => category.id !== categoryId)
+        setCategories(categoriesAfterRemoval)
+        setNewCategory({id: undefined, name: ''})
     }
 
     const [newPayee, setNewPayee] = useState<Payee>({id: undefined, name: ''})
@@ -51,14 +66,19 @@ export function Index() {
         }
 
         if (newPayee.id) {
-            payees.push(newPayee)
+            setPayees([...payees, newPayee])
         } else {
-            payees.push({id: payees.length + 1, name: newPayee.name})
+            setPayees([...payees, {id: payees.length + 1, name: newPayee.name}])
         }
         setNewPayee({id: undefined, name: ''})
     }
     const onPayeeClick = (payee: Payee) => {
         setNewPayee(payee)
+    }
+    const onPayeeDelete = (payeeId: number) => {
+        const payeesAfterRemoval = payees.filter(payee => payee.id !== payeeId)
+        setPayees(payeesAfterRemoval)
+        setNewPayee({id: undefined, name: ''})
     }
 
     const [newAccount, setNewAccount] = useState<Account>({id: undefined, name: ''})
@@ -78,14 +98,19 @@ export function Index() {
         }
 
         if (newAccount.id) {
-            accounts.push(newAccount)
+            setAccounts([...accounts, newAccount])
         } else {
-            accounts.push({id: accounts.length + 1, name: newAccount.name})
+            setAccounts([...accounts, {id: accounts.length + 1, name: newAccount.name}])
         }
         setNewAccount({id: undefined, name: ''})
     }
     const onAccountClick = (account: Account) => {
         setNewAccount(account)
+    }
+    const onAccountDelete = (accountId: number) => {
+        const accountsAfterRemoval = accounts.filter(account => account.id !== accountId)
+        setAccounts(accountsAfterRemoval)
+        setNewAccount({id: undefined, name: ''})
     }
 
     return (
@@ -105,6 +130,12 @@ export function Index() {
                         {newCategory.name &&
                             <button className="cursor-pointer" type="submit">
                                 {newCategory.id ? <FaRegSave/> : <FaPlusCircle/>}
+                            </button>
+                        }
+                        {newCategory.id &&
+                            <button className="cursor-pointer" type="button"
+                                    onClick={() => onCategoryDelete(newCategory.id!)}>
+                                <CgCloseO/>
                             </button>
                         }
                     </form>
@@ -131,6 +162,12 @@ export function Index() {
                                 {newPayee.id ? <FaRegSave/> : <FaPlusCircle/>}
                             </button>
                         }
+                        {newPayee.id &&
+                            <button className="cursor-pointer" type="button"
+                                    onClick={() => onPayeeDelete(newPayee.id!)}>
+                                <CgCloseO/>
+                            </button>
+                        }
                     </form>
                     <ul>
                         {payees.map(payee => (
@@ -152,6 +189,12 @@ export function Index() {
                         {newAccount.name &&
                             <button className="cursor-pointer" type="submit">
                                 {newAccount.id ? <FaRegSave/> : <FaPlusCircle/>}
+                            </button>
+                        }
+                        {newAccount.id &&
+                            <button className="cursor-pointer" type="button"
+                                    onClick={() => onAccountDelete(newAccount.id!)}>
+                                <CgCloseO/>
                             </button>
                         }
                     </form>

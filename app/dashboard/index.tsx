@@ -1,16 +1,24 @@
 import {AllCommunityModule, ModuleRegistry, themeBalham, colorSchemeLightCold} from 'ag-grid-community'
 import {AgGridReact, type AgGridReactProps} from 'ag-grid-react'
-import React, {useMemo, useState} from 'react'
+import React, {useEffect, useMemo, useState} from 'react'
 import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
-import {categories, expenses} from '~/fake-data'
+import {fakeCategories, fakeExpenses} from '~/fake-data'
 import {CgCloseO} from 'react-icons/cg'
+import type {Category, Expense} from '~/types/common'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
-
     const theme = themeBalham.withPart(colorSchemeLightCold)
 
-    const [rowData, setRowData] = useState(expenses)
+    useEffect(() => {
+        setCategories(fakeCategories)
+        setExpenses(fakeExpenses)
+        setRowData(fakeExpenses)
+    }, [])
+    const [categories, setCategories] = useState<Category[]>([])
+    const [expenses, setExpenses] = useState<Expense[]>([])
+
+    const [rowData, setRowData] = useState<Expense[]>([])
 
     const [colDefs, setColDefs] = useState<AgGridReactProps['columnDefs']>([
         {
