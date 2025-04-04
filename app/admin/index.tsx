@@ -2,7 +2,8 @@ import React, {type FormEvent, useEffect, useState} from 'react'
 import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
 import type {Account, Category, Payee} from '~/types/common'
 import {fakeAccounts, fakePayees, fakeCategories} from '~/fake-data'
-import {CgCloseO} from 'react-icons/cg'
+import {TbCancel} from 'react-icons/tb'
+import {FaRegTrashCan} from 'react-icons/fa6'
 
 export function Index() {
     const [accounts, setAccounts] = useState<Account[]>([])
@@ -48,6 +49,9 @@ export function Index() {
         setCategories(categoriesAfterRemoval)
         setNewCategory({id: undefined, name: ''})
     }
+    const onCategoryCancel = () => {
+        setNewCategory({id: undefined, name: ''})
+    }
 
     const [newPayee, setNewPayee] = useState<Payee>({id: undefined, name: ''})
     const onPayeeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,6 +82,9 @@ export function Index() {
     const onPayeeDelete = (payeeId: number) => {
         const payeesAfterRemoval = payees.filter(payee => payee.id !== payeeId)
         setPayees(payeesAfterRemoval)
+        setNewPayee({id: undefined, name: ''})
+    }
+    const onPayeeCancel = () => {
         setNewPayee({id: undefined, name: ''})
     }
 
@@ -112,6 +119,9 @@ export function Index() {
         setAccounts(accountsAfterRemoval)
         setNewAccount({id: undefined, name: ''})
     }
+    const onAccountCancel = () => {
+        setNewAccount({id: undefined, name: ''})
+    }
 
     return (
         <main className="flex items-center justify-center pt-16 pb-4">
@@ -135,7 +145,12 @@ export function Index() {
                         {newCategory.id &&
                             <button className="cursor-pointer" type="button"
                                     onClick={() => onCategoryDelete(newCategory.id!)}>
-                                <CgCloseO/>
+                                <FaRegTrashCan/>
+                            </button>
+                        }
+                        {newCategory.name &&
+                            <button className="cursor-pointer" type="button" onClick={onCategoryCancel}>
+                                <TbCancel/>
                             </button>
                         }
                     </form>
@@ -165,7 +180,12 @@ export function Index() {
                         {newPayee.id &&
                             <button className="cursor-pointer" type="button"
                                     onClick={() => onPayeeDelete(newPayee.id!)}>
-                                <CgCloseO/>
+                                <FaRegTrashCan/>
+                            </button>
+                        }
+                        {newPayee.name &&
+                            <button className="cursor-pointer" type="button" onClick={onPayeeCancel}>
+                                <TbCancel/>
                             </button>
                         }
                     </form>
@@ -194,7 +214,12 @@ export function Index() {
                         {newAccount.id &&
                             <button className="cursor-pointer" type="button"
                                     onClick={() => onAccountDelete(newAccount.id!)}>
-                                <CgCloseO/>
+                                <FaRegTrashCan/>
+                            </button>
+                        }
+                        {newAccount.name &&
+                            <button className="cursor-pointer" type="button" onClick={onAccountCancel}>
+                                <TbCancel/>
                             </button>
                         }
                     </form>
