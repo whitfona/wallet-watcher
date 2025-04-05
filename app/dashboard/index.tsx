@@ -74,7 +74,7 @@ export function Index() {
             id: null,
             date: '',
             account: null,
-            payee: '',
+            payee: null,
             category: null,
             memo: '',
             inflow: null,
@@ -93,7 +93,10 @@ export function Index() {
         }))
     }
 
-    const handleSelectChange = (name: string, event: SingleValue<SelectInterface>) => {
+    const handleSelectChange = (name: string, event: SingleValue<SelectInterface> | {
+        value: string | number;
+        label: string | number | undefined;
+    }) => {
         if (!event) {
             return
         }
