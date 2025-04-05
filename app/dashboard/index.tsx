@@ -120,7 +120,6 @@ export function Index() {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault()
-
         if (missingRequiredFields(newExpense)) {
             // TODO: add validation message or toast?
             console.log('error')
@@ -131,6 +130,16 @@ export function Index() {
         // pull fresh data from the db
         console.log('newExpense', newExpense)
         setRowData([...rowData, newExpense])
+        setNewExpense({
+            id: null,
+            date: '',
+            account: null,
+            payee: null,
+            category: null,
+            memo: '',
+            inflow: null,
+            outflow: null
+        })
     }
 
     const missingRequiredFields = (expense: ExpenseFormData) => {
@@ -189,6 +198,7 @@ export function Index() {
                 <Select
                     placeholder="Enter account..."
                     options={accounts}
+                    value={accounts.find(account => account.value === newExpense.account) || null}
                     onChange={(event) => handleSelectChange('account', event)}
                     name="account"
                     className="text-xs w-[149px]"
@@ -198,8 +208,11 @@ export function Index() {
                 />
                 <CreatableSelect
                     placeholder="Enter payee..."
-                    isClearable
                     options={payees}
+                    value={newExpense.payee ? {
+                        value: newExpense.payee,
+                        label: Number.isInteger(newExpense.payee) ? payees.find(payee => payee.value === newExpense.payee)?.label : newExpense.payee,
+                    } : null}
                     onChange={(event) => handleSelectChange('payee', event)}
                     name="payee"
                     className="text-xs w-[149px]"
@@ -210,6 +223,7 @@ export function Index() {
                 <Select
                     placeholder="Enter category..."
                     options={categories}
+                    value={categories.find(category => category.value === newExpense.category) || null}
                     onChange={(event) => handleSelectChange('category', event)}
                     name="category"
                     className="text-xs w-[153px]"
