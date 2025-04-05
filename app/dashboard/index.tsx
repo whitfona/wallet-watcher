@@ -1,4 +1,10 @@
-import {AllCommunityModule, ModuleRegistry, themeBalham, colorSchemeLightCold} from 'ag-grid-community'
+import {
+    AllCommunityModule,
+    ModuleRegistry,
+    themeBalham,
+    colorSchemeLightCold,
+    type CellValueChangedEvent
+} from 'ag-grid-community'
 import {AgGridReact, type AgGridReactProps} from 'ag-grid-react'
 import React, {type FormEvent, useEffect, useMemo, useState} from 'react'
 import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
@@ -38,14 +44,42 @@ export function Index() {
 
     const [colDefs, setColDefs] = useState<AgGridReactProps['columnDefs']>([
         {
-            field: 'date', valueFormatter: (params: any) => formatDate(params.value)
+            field: 'date',
+            cellDataType: 'dateString',
+            valueFormatter: (params: any) => formatDate(params.value)
         },
-        {field: 'account'},
-        {field: 'payee'},
-        {field: 'category'},
+        {
+            field: 'account',
+            cellEditor: 'agSelectCellEditor',
+            cellEditorParams: {
+                values: fakeAccounts.map((account) => (account.name))
+            },
+        },
+        {
+            field: 'payee',
+            cellEditor: 'agSelectCellEditor',
+            cellEditorParams: {
+                values: fakePayees.map((payee) => (payee.name))
+            },
+        },
+        {
+            field: 'category',
+            cellEditor: 'agSelectCellEditor',
+            cellEditorParams: {
+                values: fakeCategories.map((category) => (category.name))
+            },
+        },
         {field: 'memo'},
-        {field: 'outflow', valueFormatter: (params: any) => formatCurrency(params.value)},
-        {field: 'inflow', valueFormatter: (params: any) => formatCurrency(params.value)},
+        {
+            field: 'outflow',
+            cellDataType: 'number',
+            valueFormatter: (params: any) => formatCurrency(params.value)
+        },
+        {
+            field: 'inflow',
+            cellDataType: 'number',
+            valueFormatter: (params: any) => formatCurrency(params.value)
+        },
     ])
 
     const defaultColDef = useMemo(() => ({
@@ -105,6 +139,32 @@ export function Index() {
             ...prevExpense,
             [name]: event.value
         }))
+    }
+
+    const handleCellValueChange = (event: CellValueChangedEvent) => {
+        const expenseId = event.data.id
+        const field = event.colDef.field
+        let newValue = event.newValue
+
+        if (!expenseId || !field || !newValue) {
+            return
+        }
+
+        if (field === 'account') {
+            newValue = accounts.find((account) => account.label === newValue)?.value ?? null
+        }
+
+        if (field === 'category') {
+
+            newValue = categories.find((category) => category.label === newValue)?.value ?? null
+        }
+
+        if (field === 'payee') {
+            newValue = payees.find((payee) => payee.label === newValue)?.value ?? null
+        }
+
+        // send to db with expenseId, field and newValue
+        // pull fresh
     }
 
     const parseValue = (value: string | number | null, type: string) => {
@@ -273,7 +333,7 @@ export function Index() {
                         columnDefs={colDefs}
                         theme={theme}
                         defaultColDef={defaultColDef}
-                        onCellValueChanged={event => console.log(`New Cell Value: ${event.value}`)}
+                        onCellValueChanged={handleCellValueChange}
                     />
                 </div>
             </div>
