@@ -1,10 +1,11 @@
 import React, {type FormEvent, useEffect, useState} from 'react'
-import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
+import {FaRegSave} from 'react-icons/fa'
 import type {Account, Category, Payee} from '~/types/common'
 import {fakeAccounts, fakePayees, fakeCategories} from '~/fake-data'
 import {TbCancel} from 'react-icons/tb'
 import {FaRegTrashCan} from 'react-icons/fa6'
 import {DialogConfirmButton} from '~/components/DialogConfirmButton'
+import {IoAddCircleOutline} from 'react-icons/io5'
 
 export function Index() {
     const [accounts, setAccounts] = useState<Account[]>([])
@@ -124,9 +125,6 @@ export function Index() {
         setNewAccount({id: undefined, name: ''})
     }
 
-    const nickTest = () => {
-        console.log('DELETE NICK')
-    }
     return (
         <main className="flex items-center justify-center pt-16 pb-4">
             <div className="flex-1 flex flex-col items-center gap-8 min-h-0">
@@ -142,7 +140,7 @@ export function Index() {
                             onChange={onCategoryChange}/>
                         {newCategory.name &&
                             <button className="cursor-pointer" type="submit">
-                                {newCategory.id ? <FaRegSave/> : <FaPlusCircle/>}
+                                {newCategory.id ? <FaRegSave/> : <IoAddCircleOutline/>}
                             </button>
                         }
                         {newCategory.id &&
@@ -178,7 +176,7 @@ export function Index() {
                             onChange={onPayeeChange}/>
                         {newPayee.name &&
                             <button className="cursor-pointer" type="submit">
-                                {newPayee.id ? <FaRegSave/> : <FaPlusCircle/>}
+                                {newPayee.id ? <FaRegSave/> : <IoAddCircleOutline/>}
                             </button>
                         }
                         {newPayee.id &&
@@ -213,7 +211,7 @@ export function Index() {
                             onChange={onAccountChange}/>
                         {newAccount.name &&
                             <button className="cursor-pointer" type="submit">
-                                {newAccount.id ? <FaRegSave/> : <FaPlusCircle/>}
+                                {newAccount.id ? <FaRegSave/> : <IoAddCircleOutline/>}
                             </button>
                         }
                         {newAccount.id &&

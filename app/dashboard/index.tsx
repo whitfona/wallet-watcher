@@ -7,7 +7,7 @@ import {
 } from 'ag-grid-community'
 import {AgGridReact, type AgGridReactProps} from 'ag-grid-react'
 import React, {type FormEvent, useEffect, useMemo, useRef, useState} from 'react'
-import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
+import {FaRegSave} from 'react-icons/fa'
 import {fakeAccounts, fakeCategories, fakeExpenses, fakePayees} from '~/fake-data'
 import type {ExpenseRecord, ExpenseFormData, SelectInterface} from '~/types/common'
 import {TbCancel} from 'react-icons/tb'
@@ -15,6 +15,7 @@ import Select, {type SingleValue} from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import {FaRegTrashCan} from 'react-icons/fa6'
 import {DialogConfirmButton} from '~/components/DialogConfirmButton'
+import {IoAddCircleOutline} from 'react-icons/io5'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
@@ -269,7 +270,7 @@ export function Index() {
                 <div className="flex flex-row gap-4">
                     <button className="flex items-center gap-1 text-blue-700 cursor-pointer hover:text-blue-500"
                             onClick={() => setShowAddForm(true)}>
-                        <FaPlusCircle className="inline-block"/>
+                        <IoAddCircleOutline className="inline-block"/>
                         Add Transaction
                     </button>
                     <button className="flex items-center gap-1 text-blue-700 cursor-pointer hover:text-blue-500">
@@ -353,7 +354,7 @@ export function Index() {
                        onChange={handleChange}
                 />
                 <button className="cursor-pointer" type="submit">
-                    <FaPlusCircle/>
+                    <IoAddCircleOutline/>
                 </button>
                 <button className="cursor-pointer" type="button" onClick={cancelAddExpense}>
                     <TbCancel/>
