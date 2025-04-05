@@ -6,17 +6,19 @@ import {
     type CellValueChangedEvent
 } from 'ag-grid-community'
 import {AgGridReact, type AgGridReactProps} from 'ag-grid-react'
-import React, {type FormEvent, useEffect, useMemo, useState} from 'react'
+import React, {type FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
 import {fakeAccounts, fakeCategories, fakeExpenses, fakePayees} from '~/fake-data'
 import type {ExpenseRecord, ExpenseFormData, SelectInterface} from '~/types/common'
 import {TbCancel} from 'react-icons/tb'
 import Select, {type SingleValue} from 'react-select'
 import CreatableSelect from 'react-select/creatable'
+import {FaRegTrashCan} from 'react-icons/fa6'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
     const theme = themeBalham.withPart(colorSchemeLightCold)
+    const agGridRef = useRef<AgGridReact>(null)
 
     useEffect(() => {
         const mappedAccounts: SelectInterface[] = fakeAccounts.map((account) => ({
@@ -88,6 +90,7 @@ export function Index() {
     }), [])
 
     const [showAddForm, setShowAddForm] = useState(false)
+    const [showDeleteButton, setShowDeleteButton] = useState(false)
     const [newExpense, setNewExpense] = useState<ExpenseFormData>({
         id: null,
         date: '',
@@ -205,6 +208,27 @@ export function Index() {
         })
     }
 
+    const deleteExpenses = () => {
+        const selectedExpenses = agGridRef.current?.api?.getSelectedRows()
+
+        if (!selectedExpenses) {
+            return
+        }
+
+        const expenseIdsToDelete = selectedExpenses.map(expense => expense.id)
+        console.log(expenseIdsToDelete)
+
+        // add confirmation modal
+        // send to db with expenseIds
+        // pull fresh
+    }
+
+    const onRowSelected = () => {
+        const selectedRows = agGridRef.current?.api?.getSelectedRows()
+
+        setShowDeleteButton(selectedRows ? selectedRows.length > 0 : false)
+    }
+
     const missingRequiredFields = (expense: ExpenseFormData) => {
         return !expense.date || !expense.account || !expense.payee || (!expense.inflow && !expense.outflow)
     }
@@ -240,16 +264,24 @@ export function Index() {
                     <p className="text-xs text-gray-500">Monthly Total</p>
                 </div>
             </div>
-            <div className="flex flex-row gap-4 border-t border-gray-300 py-2 px-4 text-sm">
-                <button className="flex items-center gap-1 text-blue-700 cursor-pointer hover:text-blue-500"
-                        onClick={() => setShowAddForm(true)}>
-                    <FaPlusCircle className="inline-block"/>
-                    Add Transaction
-                </button>
-                <div className="flex items-center gap-1 text-blue-700 cursor-pointer hover:text-blue-500">
-                    <FaRegSave className="inline-block"/>
-                    File Import
+            <div className="flex justify-between border-t border-gray-300 py-2 px-4 text-sm">
+                <div className="flex flex-row gap-4">
+                    <button className="flex items-center gap-1 text-blue-700 cursor-pointer hover:text-blue-500"
+                            onClick={() => setShowAddForm(true)}>
+                        <FaPlusCircle className="inline-block"/>
+                        Add Transaction
+                    </button>
+                    <button className="flex items-center gap-1 text-blue-700 cursor-pointer hover:text-blue-500">
+                        <FaRegSave className="inline-block"/>
+                        File Import
+                    </button>
                 </div>
+                {showDeleteButton &&
+                    <button className="flex items-center gap-1 text-red-600 cursor-pointer hover:text-red-300"
+                            onClick={deleteExpenses}>
+                        <FaRegTrashCan className="inline-block"/>
+                        Delete Expenses
+                    </button>}
             </div>
             {showAddForm && <form className="flex flex-row flex-wrap gap-2 mb-2 px-4" onSubmit={handleSubmit}>
                 <input className="border border-gray-400 p-2 text-xs"
@@ -325,6 +357,7 @@ export function Index() {
             <div>
                 <div>
                     <AgGridReact
+                        ref={agGridRef}
                         autoSizeStrategy={{
                             type: 'fitGridWidth'
                         }}
@@ -334,6 +367,8 @@ export function Index() {
                         theme={theme}
                         defaultColDef={defaultColDef}
                         onCellValueChanged={handleCellValueChange}
+                        rowSelection={{mode: 'multiRow'}}
+                        onRowSelected={onRowSelected}
                     />
                 </div>
             </div>
