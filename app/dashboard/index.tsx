@@ -3,22 +3,36 @@ import {AgGridReact, type AgGridReactProps} from 'ag-grid-react'
 import React, {type FormEvent, useEffect, useMemo, useState} from 'react'
 import {FaPlusCircle, FaRegSave} from 'react-icons/fa'
 import {fakeAccounts, fakeCategories, fakeExpenses, fakePayees} from '~/fake-data'
-import type {Category, ExpenseRecord, ExpenseFormData, Account, Payee} from '~/types/common'
+import type {ExpenseRecord, ExpenseFormData, SelectInterface} from '~/types/common'
 import {TbCancel} from 'react-icons/tb'
+import Select, {type SingleValue} from 'react-select'
+import CreatableSelect from 'react-select/creatable'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
     const theme = themeBalham.withPart(colorSchemeLightCold)
 
     useEffect(() => {
-        setAccounts(fakeAccounts)
-        setCategories(fakeCategories)
-        setPayees(fakePayees)
+        const mappedAccounts: SelectInterface[] = fakeAccounts.map((account) => ({
+            value: account.id!,
+            label: account.name,
+        }))
+        setAccounts(mappedAccounts)
+        const mappedCategories: SelectInterface[] = fakeCategories.map((category) => ({
+            value: category.id!,
+            label: category.name,
+        }))
+        setCategories(mappedCategories)
+        const mappedPayees: SelectInterface[] = fakePayees.map((payee) => ({
+            value: payee.id!,
+            label: payee.name,
+        }))
+        setPayees(mappedPayees)
         setRowData(fakeExpenses)
     }, [])
-    const [accounts, setAccounts] = useState<Account[]>([])
-    const [categories, setCategories] = useState<Category[]>([])
-    const [payees, setPayees] = useState<Payee[]>([])
+    const [accounts, setAccounts] = useState<SelectInterface[]>([])
+    const [categories, setCategories] = useState<SelectInterface[]>([])
+    const [payees, setPayees] = useState<SelectInterface[]>([])
 
     const [rowData, setRowData] = useState<ExpenseRecord[]>([])
 
@@ -70,12 +84,23 @@ export function Index() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value, type} = e.target
-        
+
         const parsedValue = parseValue(value, type)
 
         setNewExpense(prevExpense => ({
             ...prevExpense,
             [name]: parsedValue
+        }))
+    }
+
+    const handleSelectChange = (name: string, event: SingleValue<SelectInterface>) => {
+        if (!event) {
+            return
+        }
+
+        setNewExpense(prevExpense => ({
+            ...prevExpense,
+            [name]: event.value
         }))
     }
 
@@ -121,6 +146,7 @@ export function Index() {
         }
         return new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format(currency)
     }
+
     return (
         <main className="pt-8 pb-4">
             <header>
@@ -160,24 +186,37 @@ export function Index() {
                        name="date"
                        onChange={handleChange}
                 />
-                <select className="border border-gray-400 p-2 text-xs" name="account" onChange={handleChange}>
-                    <option value="null">Enter account...</option>
-                    {accounts.map(account => (
-                        <option key={account.id} value={account.id}>{account.name}</option>
-                    ))}
-                </select>
-                <select className="border border-gray-400 p-2 text-xs" name="payee" onChange={handleChange}>
-                    <option value="null">Enter payee...</option>
-                    {payees.map(payee => (
-                        <option key={payee.id} value={payee.id}>{payee.name}</option>
-                    ))}
-                </select>
-                <select className="border border-gray-400 p-2 text-xs" name="category" onChange={handleChange}>
-                    <option value="null">Enter category...</option>
-                    {categories.map(category => (
-                        <option key={category.id} value={category.id}>{category.name}</option>
-                    ))}
-                </select>
+                <Select
+                    placeholder="Enter account..."
+                    options={accounts}
+                    onChange={(event) => handleSelectChange('account', event)}
+                    name="account"
+                    className="text-xs w-[149px]"
+                    styles={{
+                        menu: base => ({...base, zIndex: 10})
+                    }}
+                />
+                <CreatableSelect
+                    placeholder="Enter payee..."
+                    isClearable
+                    options={payees}
+                    onChange={(event) => handleSelectChange('payee', event)}
+                    name="payee"
+                    className="text-xs w-[149px]"
+                    styles={{
+                        menu: base => ({...base, zIndex: 10})
+                    }}
+                />
+                <Select
+                    placeholder="Enter category..."
+                    options={categories}
+                    onChange={(event) => handleSelectChange('category', event)}
+                    name="category"
+                    className="text-xs w-[153px]"
+                    styles={{
+                        menu: base => ({...base, zIndex: 10})
+                    }}
+                />
                 <input className="border border-gray-400 p-2 text-xs"
                        placeholder="Enter memo..."
                        type="text"

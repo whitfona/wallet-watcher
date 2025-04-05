@@ -1,4 +1,4 @@
-import type {Account, Category, Expense, Payee} from '~/types/common'
+import type {Account, Category, ExpenseRecord, Payee} from '~/types/common'
 
 export const fakeCategories: Category[] = [
     {
@@ -61,7 +61,7 @@ export const fakeAccounts: Account[] = [
     },
 ]
 
-export const fakeExpenses: Expense[] = [
+export const fakeExpenses: ExpenseRecord[] = [
     {
         id: 1,
         date: '2025-04-02T12:51:34.361Z',
