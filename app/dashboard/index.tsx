@@ -14,6 +14,7 @@ import {TbCancel} from 'react-icons/tb'
 import Select, {type SingleValue} from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import {FaRegTrashCan} from 'react-icons/fa6'
+import {DialogConfirmButton} from '~/components/DialogConfirmButton'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
@@ -277,11 +278,15 @@ export function Index() {
                     </button>
                 </div>
                 {showDeleteButton &&
-                    <button className="flex items-center gap-1 text-red-600 cursor-pointer hover:text-red-300"
-                            onClick={deleteExpenses}>
-                        <FaRegTrashCan className="inline-block"/>
-                        Delete Expenses
-                    </button>}
+                    <DialogConfirmButton
+                        triggerText={
+                            <span
+                                className="flex items-center gap-1 text-red-600 hover:text-red-300"><FaRegTrashCan
+                                className="inline-block"/> Delete Expenses
+                            </span>
+                        }
+                        onAccept={deleteExpenses}
+                    />}
             </div>
             {showAddForm && <form className="flex flex-row flex-wrap gap-2 mb-2 px-4" onSubmit={handleSubmit}>
                 <input className="border border-gray-400 p-2 text-xs"

@@ -4,6 +4,7 @@ import type {Account, Category, Payee} from '~/types/common'
 import {fakeAccounts, fakePayees, fakeCategories} from '~/fake-data'
 import {TbCancel} from 'react-icons/tb'
 import {FaRegTrashCan} from 'react-icons/fa6'
+import {DialogConfirmButton} from '~/components/DialogConfirmButton'
 
 export function Index() {
     const [accounts, setAccounts] = useState<Account[]>([])
@@ -123,10 +124,12 @@ export function Index() {
         setNewAccount({id: undefined, name: ''})
     }
 
+    const nickTest = () => {
+        console.log('DELETE NICK')
+    }
     return (
         <main className="flex items-center justify-center pt-16 pb-4">
             <div className="flex-1 flex flex-col items-center gap-8 min-h-0">
-
                 <section>
                     <h2 className="font-bold">Categories</h2>
                     <form onSubmit={onCategorySubmit}>
@@ -143,10 +146,11 @@ export function Index() {
                             </button>
                         }
                         {newCategory.id &&
-                            <button className="cursor-pointer" type="button"
-                                    onClick={() => onCategoryDelete(newCategory.id!)}>
-                                <FaRegTrashCan/>
-                            </button>
+                            <DialogConfirmButton
+                                triggerText={<FaRegTrashCan/>}
+                                onAccept={() => onCategoryDelete(newCategory.id!)}
+                                deleteText={newCategory.name}
+                            />
                         }
                         {newCategory.name &&
                             <button className="cursor-pointer" type="button" onClick={onCategoryCancel}>
@@ -178,10 +182,11 @@ export function Index() {
                             </button>
                         }
                         {newPayee.id &&
-                            <button className="cursor-pointer" type="button"
-                                    onClick={() => onPayeeDelete(newPayee.id!)}>
-                                <FaRegTrashCan/>
-                            </button>
+                            <DialogConfirmButton
+                                triggerText={<FaRegTrashCan/>}
+                                onAccept={() => onPayeeDelete(newPayee.id!)}
+                                deleteText={newPayee.name}
+                            />
                         }
                         {newPayee.name &&
                             <button className="cursor-pointer" type="button" onClick={onPayeeCancel}>
@@ -212,10 +217,11 @@ export function Index() {
                             </button>
                         }
                         {newAccount.id &&
-                            <button className="cursor-pointer" type="button"
-                                    onClick={() => onAccountDelete(newAccount.id!)}>
-                                <FaRegTrashCan/>
-                            </button>
+                            <DialogConfirmButton
+                                triggerText={<FaRegTrashCan/>}
+                                onAccept={() => onAccountDelete(newAccount.id!)}
+                                deleteText={newAccount.name}
+                            />
                         }
                         {newAccount.name &&
                             <button className="cursor-pointer" type="button" onClick={onAccountCancel}>
