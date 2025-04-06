@@ -1,9 +1,9 @@
 import React, {type FormEvent, type ChangeEvent} from 'react'
 import {FaRegSave} from 'react-icons/fa'
-import {IoAddCircleOutline} from 'react-icons/io5'
 import {TbCancel} from 'react-icons/tb'
 import {FaRegTrashCan} from 'react-icons/fa6'
 import {DialogConfirmButton} from '~/components/DialogConfirmButton'
+import {IoMdAddCircleOutline} from 'react-icons/io'
 
 interface ItemManagerProps<T> {
     title: string
@@ -46,7 +46,7 @@ export function ItemManager<T extends { id?: number; name: string }>(
                         <button className="cursor-pointer text-green-400 hover:text-green-600" type="submit">
                             {newItem.id ?
                                 <FaRegSave className="w-[20px] h-[20px]"/> :
-                                <IoAddCircleOutline className="w-[20px] h-[20px]"/>}
+                                <IoMdAddCircleOutline className="w-[20px] h-[20px]"/>}
                         </button>
                     )}
                     {newItem.id && (

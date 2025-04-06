@@ -15,7 +15,7 @@ import Select, {type SingleValue} from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import {FaRegTrashCan} from 'react-icons/fa6'
 import {DialogConfirmButton} from '~/components/DialogConfirmButton'
-import {IoAddCircleOutline} from 'react-icons/io5'
+import {IoMdAddCircleOutline} from 'react-icons/io'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
@@ -270,7 +270,7 @@ export function Index() {
                 <div className="flex flex-row gap-4">
                     <button className="flex items-center gap-1 text-blue-500 cursor-pointer hover:text-blue-700"
                             onClick={() => setShowAddForm(true)}>
-                        <IoAddCircleOutline className="inline-block w-[16px] h-[16px]"/>
+                        <IoMdAddCircleOutline className="inline-block w-[16px] h-[16px]"/>
                         Add Transaction
                     </button>
                     <button className="flex items-center gap-1 text-blue-500 cursor-pointer hover:text-blue-700">
@@ -355,11 +355,12 @@ export function Index() {
                        value={newExpense.inflow ?? ''}
                        onChange={handleChange}
                 />
-                <button className="cursor-pointer" type="submit">
-                    <IoAddCircleOutline/>
+                <button className="cursor-pointer text-green-400 hover:text-green-600" type="submit">
+                    <IoMdAddCircleOutline className="w-[20px] h-[20px]"/>
                 </button>
-                <button className="cursor-pointer" type="button" onClick={cancelAddExpense}>
-                    <TbCancel/>
+                <button className="cursor-pointer text-gray-400 hover:text-gray-700" type="button"
+                        onClick={cancelAddExpense}>
+                    <TbCancel className="w-[20px] h-[20px]"/>
                 </button>
             </form>}
             <div>
