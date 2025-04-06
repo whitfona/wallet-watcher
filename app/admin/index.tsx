@@ -96,9 +96,10 @@ export function Index() {
     }
 
     return (
-        <main className="flex items-center justify-center pt-16 pb-4">
-            <div className="flex-1 flex flex-col items-center gap-8 min-h-0">
+        <main className="pt-16 pb-4">
+            <div className="flex flex-col w-sm mx-auto gap-8">
                 <ItemManager
+                    title="Categories"
                     itemType="Category"
                     items={itemState.categories.items}
                     newItem={itemState.categories.newItem}
@@ -109,6 +110,7 @@ export function Index() {
                     onItemDelete={(id) => handleItemDelete('categories', id)}
                 />
                 <ItemManager
+                    title="Payees"
                     itemType="Payee"
                     items={itemState.payees.items}
                     newItem={itemState.payees.newItem}
@@ -119,6 +121,7 @@ export function Index() {
                     onItemDelete={(id) => handleItemDelete('payees', id)}
                 />
                 <ItemManager
+                    title="Accounts"
                     itemType="Account"
                     items={itemState.accounts.items}
                     newItem={itemState.accounts.newItem}
