@@ -1,9 +1,8 @@
-import React, {createContext, useContext, useCallback, useState, useRef, useEffect} from 'react'
+import React, {createContext, useCallback, useContext, useEffect, useRef, useState} from 'react'
 import {FaRegCircleCheck} from 'react-icons/fa6'
 import {IoMdClose} from 'react-icons/io'
 import {IoAlertCircleOutline, IoWarningOutline} from 'react-icons/io5'
 
-// Types
 type ToastType = 'success' | 'warning' | 'error';
 
 interface Toast {
@@ -18,11 +17,15 @@ interface ToastContextType {
     error: (message: string) => void;
 }
 
-// Create context
+interface ToastComponentProps {
+    message: string
+    type: ToastType
+    onClose: () => void
+}
+
 const ToastContext = createContext<ToastContextType | undefined>(undefined)
 
-// Toast component
-const ToastComponent = ({message, type, onClose}: { message: string; type: ToastType; onClose: () => void }) => {
+const ToastComponent = ({message, type, onClose}: ToastComponentProps) => {
     const dialogRef = useRef<HTMLDialogElement>(null)
 
     useEffect(() => {
@@ -124,7 +127,6 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({children
     )
 }
 
-// Hook for consumers
 export const useToast = (): ToastContextType => {
     const context = useContext(ToastContext)
     if (!context) {
