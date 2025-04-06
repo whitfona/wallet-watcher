@@ -16,6 +16,7 @@ import CreatableSelect from 'react-select/creatable'
 import {FaRegTrashCan} from 'react-icons/fa6'
 import {DialogConfirmButton} from '~/components/DialogConfirmButton'
 import {IoMdAddCircleOutline} from 'react-icons/io'
+import {DialogCalendar} from '~/components/DialogCalendar'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
@@ -91,6 +92,8 @@ export function Index() {
         editable: true, // TODO: Handle these changes
     }), [])
 
+    const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
+    const [year, setYear] = useState<number>(new Date().getFullYear())
     const [showAddForm, setShowAddForm] = useState(false)
     const [showDeleteButton, setShowDeleteButton] = useState(false)
     const [newExpense, setNewExpense] = useState<ExpenseFormData>({
@@ -245,10 +248,23 @@ export function Index() {
         return new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format(currency)
     }
 
+    const onDateChange = (month: number, year: number) => {
+        setMonth(month)
+        setYear(year)
+
+        // fetch data based on new year
+    }
+
     return (
         <main className="pt-8 pb-4">
             <header>
                 <h1 className="text-center text-2xl">WalletWatcher</h1>
+                <DialogCalendar
+                    className="mt-4"
+                    initialMonth={month}
+                    initialYear={year}
+                    onDateChange={onDateChange}
+                />
             </header>
             <div className="flex flex-row gap-4 border-t border-gray-300 p-4 mt-8">
                 <div>

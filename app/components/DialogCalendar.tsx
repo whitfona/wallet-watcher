@@ -1,7 +1,14 @@
 import {FaCaretDown, FaCaretLeft, FaCaretRight} from 'react-icons/fa'
 import React, {useEffect, useRef, useState} from 'react'
 
-export const DialogCalendar = () => {
+interface DialogCalendarProps {
+    initialMonth?: number
+    initialYear?: number
+    onDateChange?: (month: number, year: number) => void
+    className?: string
+}
+
+export const DialogCalendar = ({initialMonth, initialYear, onDateChange, className}: DialogCalendarProps) => {
     const MONTHS: { [key: number]: string } = {
         1: 'Jan',
         2: 'Feb',
@@ -18,21 +25,22 @@ export const DialogCalendar = () => {
     }
 
     const calendarRef = useRef<HTMLDialogElement>(null)
-    const [month, setMonth] = useState<number>()
-    const [year, setYear] = useState<number>()
+    const [month, setMonth] = useState<number>(initialMonth || new Date().getMonth() + 1)
+    const [year, setYear] = useState<number>(initialYear || new Date().getFullYear())
 
     useEffect(() => {
-        const today = new Date()
-
-        setMonth(today.getMonth() + 1)
-        setYear(today.getFullYear())
-
         calendarRef.current?.addEventListener('click', onClick)
 
         return () => {
             calendarRef.current?.removeEventListener('click', onClick)
         }
     }, [])
+
+    useEffect(() => {
+        if (month && year && onDateChange) {
+            onDateChange(month, year)
+        }
+    }, [month, onDateChange])
 
     const openCalendar = () => {
         calendarRef.current?.showModal()
@@ -64,11 +72,11 @@ export const DialogCalendar = () => {
     return (
         <div className="max-w-fit mx-auto mb-10">
             <button
-                className="flex items-center gap-1 text-center font-bold uppercase cursor-pointer"
+                className={`flex items-center gap-1 text-center font-bold uppercase cursor-pointer ${className}`}
                 type="button"
                 onClick={openCalendar}
             >
-                {MONTHS[month ?? 1]} {year ?? 2025} <FaCaretDown className="inline-block"/>
+                {MONTHS[month]} {year} <FaCaretDown className="inline-block"/>
             </button>
 
             <dialog
