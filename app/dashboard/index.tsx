@@ -268,13 +268,13 @@ export function Index() {
             </div>
             <div className="flex justify-between border-t border-gray-300 py-2 px-4 text-sm">
                 <div className="flex flex-row gap-4">
-                    <button className="flex items-center gap-1 text-blue-700 cursor-pointer hover:text-blue-500"
+                    <button className="flex items-center gap-1 text-blue-500 cursor-pointer hover:text-blue-700"
                             onClick={() => setShowAddForm(true)}>
-                        <IoAddCircleOutline className="inline-block"/>
+                        <IoAddCircleOutline className="inline-block w-[16px] h-[16px]"/>
                         Add Transaction
                     </button>
-                    <button className="flex items-center gap-1 text-blue-700 cursor-pointer hover:text-blue-500">
-                        <FaRegSave className="inline-block"/>
+                    <button className="flex items-center gap-1 text-blue-500 cursor-pointer hover:text-blue-700">
+                        <FaRegSave className="inline-block w-[16px] h-[16px]"/>
                         File Import
                     </button>
                 </div>
@@ -282,8 +282,10 @@ export function Index() {
                     <DialogConfirmButton
                         triggerText={
                             <span
-                                className="flex items-center gap-1 text-red-600 hover:text-red-300"><FaRegTrashCan
-                                className="inline-block"/> Delete Expenses
+                                className="flex items-center gap-1 text-red-300 hover:text-red-500"
+                            >
+                                <FaRegTrashCan className="inline-block w-[16px] h-[16px]"/>
+                                Delete Expenses
                             </span>
                         }
                         onAccept={deleteExpenses}

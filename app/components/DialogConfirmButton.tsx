@@ -49,7 +49,7 @@ export const DialogConfirmButton = (
             <dialog ref={dialogRef} className="place-self-center rounded-lg backdrop:bg-black/60">
 
                 <div className="flex items-center gap-2 border-b border-gray-200 py-4 px-6 text-xl">
-                    <FiAlertCircle className="text-red-500"/>
+                    <FiAlertCircle className="w-[30px] h-[30px] text-red-500"/>
                     <h1 className="font-bold">Are you sure?</h1>
                 </div>
 
@@ -68,7 +68,7 @@ export const DialogConfirmButton = (
                     </button>
                     <button
                         type="button"
-                        className="border border-red-500 rounded py-4 px-4 bg-red-500 hover:bg-red-300 text-white cursor-pointer"
+                        className="rounded py-4 px-4 bg-red-300 hover:bg-red-500 text-white cursor-pointer"
                         onClick={handleAccept}
                     >
                         {acceptButtonText}

@@ -43,7 +43,7 @@ export function ItemManager<T extends { id?: number; name: string }>(
                 />
                 <div className="flex gap-2">
                     {newItem.name && (
-                        <button className="cursor-pointer text-green-600 hover:text-green-400" type="submit">
+                        <button className="cursor-pointer text-green-400 hover:text-green-600" type="submit">
                             {newItem.id ?
                                 <FaRegSave className="w-[20px] h-[20px]"/> :
                                 <IoAddCircleOutline className="w-[20px] h-[20px]"/>}
