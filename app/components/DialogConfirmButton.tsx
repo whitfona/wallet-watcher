@@ -68,7 +68,7 @@ export const DialogConfirmButton = (
                     </button>
                     <button
                         type="button"
-                        className="rounded py-4 px-4 bg-red-300 hover:bg-red-500 text-white cursor-pointer"
+                        className="rounded py-4 px-4 bg-red-500 hover:bg-red-700 text-white cursor-pointer"
                         onClick={handleAccept}
                     >
                         {acceptButtonText}
