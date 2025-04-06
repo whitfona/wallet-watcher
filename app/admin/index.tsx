@@ -1,239 +1,133 @@
-import React, {type FormEvent, useEffect, useState} from 'react'
-import {FaRegSave} from 'react-icons/fa'
-import type {Account, Category, Payee} from '~/types/common'
+import React, {useEffect, useState} from 'react'
 import {fakeAccounts, fakePayees, fakeCategories} from '~/fake-data'
-import {TbCancel} from 'react-icons/tb'
-import {FaRegTrashCan} from 'react-icons/fa6'
-import {DialogConfirmButton} from '~/components/DialogConfirmButton'
-import {IoAddCircleOutline} from 'react-icons/io5'
+import {type Account, type Category, type Payee} from '~/types/common'
+import {ItemManager} from '~/admin/components/ItemManager'
+import {useToast} from '~/components/Toast'
+
+interface ItemState<T> {
+    items: T[]
+    newItem: T
+}
 
 export function Index() {
-    const [accounts, setAccounts] = useState<Account[]>([])
-    const [categories, setCategories] = useState<Category[]>([])
-    const [payees, setPayees] = useState<Payee[]>([])
+    const toast = useToast()
+    const [itemState, setItemState] = useState<{
+        categories: ItemState<Category>
+        payees: ItemState<Payee>
+        accounts: ItemState<Account>
+    }>({
+        categories: {items: [], newItem: {id: undefined, name: ''}},
+        payees: {items: [], newItem: {id: undefined, name: ''}},
+        accounts: {items: [], newItem: {id: undefined, name: ''}}
+    })
 
     useEffect(() => {
-        setAccounts(fakeAccounts)
-        setCategories(fakeCategories)
-        setPayees(fakePayees)
+        setItemState(() => ({
+            categories: {items: fakeCategories, newItem: {id: undefined, name: ''}},
+            payees: {items: fakePayees, newItem: {id: undefined, name: ''}},
+            accounts: {items: fakeAccounts, newItem: {id: undefined, name: ''}}
+        }))
     }, [])
 
-    const [newCategory, setNewCategory] = useState<Category>({id: undefined, name: ''})
-
-    const onCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const categoryName = e.target.value
-
-        if (!categoryName) {
-            setNewCategory({id: undefined, name: categoryName})
-        } else {
-            setNewCategory({...newCategory, name: categoryName})
-        }
+    const handleItemChange = (itemType: keyof typeof itemState, e: React.ChangeEvent<HTMLInputElement>) => {
+        const {value} = e.target
+        setItemState((prevState) => ({
+            ...prevState,
+            [itemType]: {
+                ...prevState[itemType],
+                newItem: {id: undefined, name: value}
+            }
+        }))
     }
-    const onCategorySubmit = (e: FormEvent<HTMLFormElement>) => {
+
+    const handleItemSubmit = (itemType: keyof typeof itemState, e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        if (!newCategory) {
+        const newItem = itemState[itemType].newItem
+        if (!newItem.name) {
             return
         }
 
-        if (newCategory.id) {
-            setCategories([...categories, newCategory])
-        } else {
+        setItemState((prevState) => {
+            const updatedItems = newItem.id
+                ? prevState[itemType].items.map((item) =>
+                    item.id === newItem.id ? newItem : item
+                )
+                : [
+                    ...prevState[itemType].items,
+                    {...newItem, id: prevState[itemType].items.length + 1}
+                ]
 
-            setCategories([...categories, {id: categories.length + 1, name: newCategory.name}])
-        }
-        setNewCategory({id: undefined, name: ''})
-    }
-    const onCategoryClick = (category: Category) => {
-        setNewCategory(category)
-    }
-    const onCategoryDelete = (categoryId: number) => {
-        const categoriesAfterRemoval = categories.filter(category => category.id !== categoryId)
-        setCategories(categoriesAfterRemoval)
-        setNewCategory({id: undefined, name: ''})
-    }
-    const onCategoryCancel = () => {
-        setNewCategory({id: undefined, name: ''})
+            return {
+                ...prevState,
+                [itemType]: {items: updatedItems, newItem: {id: undefined, name: ''}}
+            }
+        })
+        toast.success(`${newItem.name} has been updated successfully.`)
     }
 
-    const [newPayee, setNewPayee] = useState<Payee>({id: undefined, name: ''})
-    const onPayeeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const payeeName = e.target.value
-
-        if (!payeeName) {
-            setNewPayee({id: undefined, name: payeeName})
-        } else {
-            setNewPayee({...newPayee, name: payeeName})
-        }
-    }
-    const onPayeeSubmit = (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        if (!newPayee) {
-            return
-        }
-
-        if (newPayee.id) {
-            setPayees([...payees, newPayee])
-        } else {
-            setPayees([...payees, {id: payees.length + 1, name: newPayee.name}])
-        }
-        setNewPayee({id: undefined, name: ''})
-    }
-    const onPayeeClick = (payee: Payee) => {
-        setNewPayee(payee)
-    }
-    const onPayeeDelete = (payeeId: number) => {
-        const payeesAfterRemoval = payees.filter(payee => payee.id !== payeeId)
-        setPayees(payeesAfterRemoval)
-        setNewPayee({id: undefined, name: ''})
-    }
-    const onPayeeCancel = () => {
-        setNewPayee({id: undefined, name: ''})
+    const handleItemCancel = (itemType: keyof typeof itemState) => {
+        setItemState((prevState) => ({
+            ...prevState,
+            [itemType]: {...prevState[itemType], newItem: {id: undefined, name: ''}}
+        }))
     }
 
-    const [newAccount, setNewAccount] = useState<Account>({id: undefined, name: ''})
-    const onAccountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const payeeName = e.target.value
+    const handleItemClick = <T extends keyof typeof itemState>(
+        itemType: T,
+        item: typeof itemState[T]['newItem'] // Infer the type of item based on the itemType
+    ) => {
+        setItemState((prevState) => ({
+            ...prevState,
+            [itemType]: {...prevState[itemType], newItem: item}
+        }))
+    }
 
-        if (!payeeName) {
-            setNewAccount({id: undefined, name: payeeName})
-        } else {
-            setNewAccount({...newAccount, name: payeeName})
-        }
-    }
-    const onAccountSubmit = (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        if (!newAccount) {
-            return
-        }
-
-        if (newAccount.id) {
-            setAccounts([...accounts, newAccount])
-        } else {
-            setAccounts([...accounts, {id: accounts.length + 1, name: newAccount.name}])
-        }
-        setNewAccount({id: undefined, name: ''})
-    }
-    const onAccountClick = (account: Account) => {
-        setNewAccount(account)
-    }
-    const onAccountDelete = (accountId: number) => {
-        const accountsAfterRemoval = accounts.filter(account => account.id !== accountId)
-        setAccounts(accountsAfterRemoval)
-        setNewAccount({id: undefined, name: ''})
-    }
-    const onAccountCancel = () => {
-        setNewAccount({id: undefined, name: ''})
+    const handleItemDelete = (itemType: keyof typeof itemState, id: number) => {
+        setItemState((prevState) => {
+            const updatedItems = prevState[itemType].items.filter(
+                (item) => item.id !== id
+            )
+            return {
+                ...prevState,
+                [itemType]: {items: updatedItems, newItem: {id: undefined, name: ''}}
+            }
+        })
+        toast.success('Item has been deleted successfully.')
     }
 
     return (
         <main className="flex items-center justify-center pt-16 pb-4">
             <div className="flex-1 flex flex-col items-center gap-8 min-h-0">
-                <section>
-                    <h2 className="font-bold">Categories</h2>
-                    <form onSubmit={onCategorySubmit}>
-                        <input
-                            type="text"
-                            name="category"
-                            placeholder="Add category..."
-                            className="border-1 border-gray-200 rounded-md p-1 mr-2"
-                            value={newCategory.name}
-                            onChange={onCategoryChange}/>
-                        {newCategory.name &&
-                            <button className="cursor-pointer" type="submit">
-                                {newCategory.id ? <FaRegSave/> : <IoAddCircleOutline/>}
-                            </button>
-                        }
-                        {newCategory.id &&
-                            <DialogConfirmButton
-                                triggerText={<FaRegTrashCan/>}
-                                onAccept={() => onCategoryDelete(newCategory.id!)}
-                                deleteText={newCategory.name}
-                            />
-                        }
-                        {newCategory.name &&
-                            <button className="cursor-pointer" type="button" onClick={onCategoryCancel}>
-                                <TbCancel/>
-                            </button>
-                        }
-                    </form>
-                    <ul>
-                        {categories.map(category => (
-                            <li key={category.id}
-                                onClick={() => onCategoryClick(category)}>{category.name}</li>
-                        ))}
-                    </ul>
-                </section>
-
-                <section>
-                    <h2 className="font-bold">Payees</h2>
-                    <form onSubmit={onPayeeSubmit}>
-                        <input
-                            type="text"
-                            name="payee"
-                            placeholder="Add payee..."
-                            className="border-1 border-gray-200 rounded-md p-1 mr-2"
-                            value={newPayee.name}
-                            onChange={onPayeeChange}/>
-                        {newPayee.name &&
-                            <button className="cursor-pointer" type="submit">
-                                {newPayee.id ? <FaRegSave/> : <IoAddCircleOutline/>}
-                            </button>
-                        }
-                        {newPayee.id &&
-                            <DialogConfirmButton
-                                triggerText={<FaRegTrashCan/>}
-                                onAccept={() => onPayeeDelete(newPayee.id!)}
-                                deleteText={newPayee.name}
-                            />
-                        }
-                        {newPayee.name &&
-                            <button className="cursor-pointer" type="button" onClick={onPayeeCancel}>
-                                <TbCancel/>
-                            </button>
-                        }
-                    </form>
-                    <ul>
-                        {payees.map(payee => (
-                            <li key={payee.id} onClick={() => onPayeeClick(payee)}>{payee.name}</li>
-                        ))}
-                    </ul>
-                </section>
-
-                <section>
-                    <h2 className="font-bold">Accounts</h2>
-                    <form onSubmit={onAccountSubmit}>
-                        <input
-                            type="text"
-                            name="account"
-                            placeholder="Add account..."
-                            className="border-1 border-gray-200 rounded-md p-1 mr-2"
-                            value={newAccount.name}
-                            onChange={onAccountChange}/>
-                        {newAccount.name &&
-                            <button className="cursor-pointer" type="submit">
-                                {newAccount.id ? <FaRegSave/> : <IoAddCircleOutline/>}
-                            </button>
-                        }
-                        {newAccount.id &&
-                            <DialogConfirmButton
-                                triggerText={<FaRegTrashCan/>}
-                                onAccept={() => onAccountDelete(newAccount.id!)}
-                                deleteText={newAccount.name}
-                            />
-                        }
-                        {newAccount.name &&
-                            <button className="cursor-pointer" type="button" onClick={onAccountCancel}>
-                                <TbCancel/>
-                            </button>
-                        }
-                    </form>
-                    <ul>
-                        {accounts.map(account => (
-                            <li key={account.id} onClick={() => onAccountClick(account)}>{account.name}</li>
-                        ))}
-                    </ul>
-                </section>
-
+                <ItemManager
+                    itemType="Category"
+                    items={itemState.categories.items}
+                    newItem={itemState.categories.newItem}
+                    onItemChange={(e) => handleItemChange('categories', e)}
+                    onItemSubmit={(e) => handleItemSubmit('categories', e)}
+                    onItemCancel={() => handleItemCancel('categories')}
+                    onItemClick={(category) => handleItemClick('categories', category)}
+                    onItemDelete={(id) => handleItemDelete('categories', id)}
+                />
+                <ItemManager
+                    itemType="Payee"
+                    items={itemState.payees.items}
+                    newItem={itemState.payees.newItem}
+                    onItemChange={(e) => handleItemChange('payees', e)}
+                    onItemSubmit={(e) => handleItemSubmit('payees', e)}
+                    onItemCancel={() => handleItemCancel('payees')}
+                    onItemClick={(payee) => handleItemClick('payees', payee)}
+                    onItemDelete={(id) => handleItemDelete('payees', id)}
+                />
+                <ItemManager
+                    itemType="Account"
+                    items={itemState.accounts.items}
+                    newItem={itemState.accounts.newItem}
+                    onItemChange={(e) => handleItemChange('accounts', e)}
+                    onItemSubmit={(e) => handleItemSubmit('accounts', e)}
+                    onItemCancel={() => handleItemCancel('accounts')}
+                    onItemClick={(account) => handleItemClick('accounts', account)}
+                    onItemDelete={(id) => handleItemDelete('accounts', id)}
+                />
             </div>
         </main>
     )
