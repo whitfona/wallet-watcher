@@ -17,6 +17,7 @@ import {FaRegTrashCan} from 'react-icons/fa6'
 import {DialogConfirmButton} from '~/components/DialogConfirmButton'
 import {IoMdAddCircleOutline} from 'react-icons/io'
 import {DialogCalendar} from '~/components/DialogCalendar'
+import {read, utils} from 'xlsx'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
@@ -92,6 +93,7 @@ export function Index() {
         editable: true, // TODO: Handle these changes
     }), [])
 
+    const fileUploadRef = useRef<HTMLInputElement>(null)
     const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
     const [year, setYear] = useState<number>(new Date().getFullYear())
     const [showAddForm, setShowAddForm] = useState(false)
@@ -255,6 +257,47 @@ export function Index() {
         // fetch data based on new year
     }
 
+    const handleFileImportClick = () => {
+        fileUploadRef.current?.click()
+    }
+
+    const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target || !e.target.files) {
+            return
+        }
+        const file = e.target.files[0]
+        const reader = new FileReader()
+
+        reader.onload = (event: ProgressEvent<FileReader>) => {
+            if (!event.target) {
+                return
+            }
+            const workbook = read(event.target.result, {type: 'binary'})
+            const sheetName = workbook.SheetNames[0]
+            const sheet = workbook.Sheets[sheetName]
+            const header = ['date', 'account', 'payee', 'category', 'memo', 'outflow', 'inflow']
+            const sheetData: ExpenseFormData[] = utils.sheet_to_json(sheet, {header: header})
+            
+            const mappedData = sheetData.slice(1).map((item, index) => {
+                return {
+                    date: new Date(item.date).toLocaleDateString(),
+                    account: item.account || '',
+                    payee: item.payee || '',
+                    category: item.category || '',
+                    memo: item.memo || '',
+                    outflow: item.outflow || null,
+                    inflow: item.inflow || null
+                }
+            })
+
+            // send mappedData to backend
+            setRowData((prev) => [...prev, ...mappedData])
+            console.log(mappedData)
+        }
+
+        reader.readAsArrayBuffer(file)
+    }
+
     return (
         <main className="pt-8 pb-4">
             <header>
@@ -284,14 +327,25 @@ export function Index() {
             </div>
             <div className="flex justify-between border-t border-gray-300 py-2 px-4 text-sm">
                 <div className="flex flex-row gap-4">
-                    <button className="flex items-center gap-1 text-blue-500 cursor-pointer hover:text-blue-700"
+                    <button className="flex items-center gap-1 text-blue-500 hover:text-blue-700 cursor-pointer"
                             onClick={() => setShowAddForm(true)}>
                         <IoMdAddCircleOutline className="inline-block w-[16px] h-[16px]"/>
                         Add Transaction
                     </button>
-                    <button className="flex items-center gap-1 text-blue-500 cursor-pointer hover:text-blue-700">
+                    <button
+                        className="relative flex items-center gap-1 text-blue-500 hover:text-blue-700 cursor-pointer"
+                        title="['date', 'account', 'payee', 'category', 'memo', 'outflow', 'inflow']"
+                        onClick={handleFileImportClick}
+                    >
                         <FaRegSave className="inline-block w-[16px] h-[16px]"/>
                         File Import
+                        <input
+                            ref={fileUploadRef}
+                            type="file"
+                            onChange={onFileChange}
+                            className="hidden"
+                            aria-label="File Import"
+                        />
                     </button>
                 </div>
                 {showDeleteButton &&
