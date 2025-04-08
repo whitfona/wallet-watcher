@@ -261,6 +261,16 @@ export function Index() {
         fileUploadRef.current?.click()
     }
 
+    interface SheetDataInterface {
+        date: string;
+        account: string | null;
+        payee: string | null;
+        category: string | null;
+        memo: string;
+        outflow: number | null;
+        inflow: number | null;
+    }
+
     const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target || !e.target.files) {
             return
@@ -276,14 +286,17 @@ export function Index() {
             const sheetName = workbook.SheetNames[0]
             const sheet = workbook.Sheets[sheetName]
             const header = ['date', 'account', 'payee', 'category', 'memo', 'outflow', 'inflow']
-            const sheetData: ExpenseFormData[] = utils.sheet_to_json(sheet, {header: header})
-            
+            const sheetData: SheetDataInterface[] = utils.sheet_to_json(sheet, {header: header})
             const mappedData = sheetData.slice(1).map((item, index) => {
+                const account = accounts.find((account) => account.label === item.account)
+                const payee = payees.find((payee) => payee.label === item.payee)
+                const category = categories.find((account) => item.category && account.label.includes(item.category))
+
                 return {
                     date: new Date(item.date).toLocaleDateString(),
-                    account: item.account || '',
-                    payee: item.payee || '',
-                    category: item.category || '',
+                    account: account?.value || null,
+                    payee: payee?.value || item.payee || null,
+                    category: category?.value || null,
                     memo: item.memo || '',
                     outflow: item.outflow || null,
                     inflow: item.inflow || null
