@@ -6,18 +6,16 @@ import {
     type CellValueChangedEvent
 } from 'ag-grid-community'
 import {AgGridReact, type AgGridReactProps} from 'ag-grid-react'
-import React, {type FormEvent, useEffect, useMemo, useRef, useState} from 'react'
+import {type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import {FaRegSave} from 'react-icons/fa'
 import {fakeAccounts, fakeCategories, fakeExpenses, fakePayees} from '@/fake-data'
 import type {ExpenseRecord, ExpenseFormData, SelectInterface} from '@/types/common'
-import {TbCancel} from 'react-icons/tb'
-import Select, {type SingleValue} from 'react-select'
-import CreatableSelect from 'react-select/creatable'
 import {FaRegTrashCan} from 'react-icons/fa6'
 import {DialogConfirmButton} from '@/components/DialogConfirmButton'
 import {IoMdAddCircleOutline} from 'react-icons/io'
 import {DialogCalendar} from '@/components/DialogCalendar'
 import {read, utils} from 'xlsx'
+import {AddExpenseForm} from '@/dashboard/components/AddExpenseForm'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
@@ -126,31 +124,6 @@ export function Index() {
         })
     }
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value, type} = e.target
-
-        const parsedValue = parseValue(value, type)
-
-        setNewExpense(prevExpense => ({
-            ...prevExpense,
-            [name]: parsedValue
-        }))
-    }
-
-    const handleSelectChange = (name: string, event: SingleValue<SelectInterface> | {
-        value: string | number;
-        label: string | number | undefined;
-    }) => {
-        if (!event) {
-            return
-        }
-
-        setNewExpense(prevExpense => ({
-            ...prevExpense,
-            [name]: event.value
-        }))
-    }
-
     const handleCellValueChange = (event: CellValueChangedEvent) => {
         const expenseId = event.data.id
         const field = event.colDef.field
@@ -177,21 +150,7 @@ export function Index() {
         // pull fresh
     }
 
-    const parseValue = (value: string | number | null, type: string) => {
-        let parsedValue: number | string | null
-        if (type === 'number' || type === 'select-one') {
-            if (value === '') {
-                parsedValue = null
-            } else {
-                parsedValue = value ? Number(value) : null
-            }
-        } else {
-            parsedValue = value ?? null
-        }
-        return parsedValue
-    }
-
-    const handleSubmit = (e: FormEvent) => {
+    const handleAddExpense = (e: FormEvent) => {
         e.preventDefault()
         if (missingRequiredFields(newExpense)) {
             // TODO: add validation message or toast?
@@ -271,7 +230,7 @@ export function Index() {
         inflow: number | null;
     }
 
-    const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const onFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (!e.target || !e.target.files) {
             return
         }
@@ -374,78 +333,16 @@ export function Index() {
                         onAccept={deleteExpenses}
                     />}
             </div>
-            {showAddForm && <form className="flex flex-row flex-wrap gap-2 mb-2 px-4" onSubmit={handleSubmit}>
-                <input className="border border-gray-400 p-2 text-xs"
-                       type="date"
-                       value={newExpense.date}
-                       name="date"
-                       onChange={handleChange}
-                />
-                <Select
-                    placeholder="Enter account..."
-                    options={accounts}
-                    value={accounts.find(account => account.value === newExpense.account) || null}
-                    onChange={(event) => handleSelectChange('account', event)}
-                    name="account"
-                    className="text-xs w-[149px]"
-                    styles={{
-                        menu: base => ({...base, zIndex: 10})
-                    }}
-                />
-                <CreatableSelect
-                    placeholder="Enter payee..."
-                    options={payees}
-                    value={newExpense.payee ? {
-                        value: newExpense.payee,
-                        label: Number.isInteger(newExpense.payee) ? payees.find(payee => payee.value === newExpense.payee)?.label : newExpense.payee,
-                    } : null}
-                    onChange={(event) => handleSelectChange('payee', event)}
-                    name="payee"
-                    className="text-xs w-[149px]"
-                    styles={{
-                        menu: base => ({...base, zIndex: 10})
-                    }}
-                />
-                <Select
-                    placeholder="Enter category..."
-                    options={categories}
-                    value={categories.find(category => category.value === newExpense.category) || null}
-                    onChange={(event) => handleSelectChange('category', event)}
-                    name="category"
-                    className="text-xs w-[153px]"
-                    styles={{
-                        menu: base => ({...base, zIndex: 10})
-                    }}
-                />
-                <input className="border border-gray-400 p-2 text-xs"
-                       placeholder="Enter memo..."
-                       type="text"
-                       name="memo"
-                       value={newExpense.memo}
-                       onChange={handleChange}
-                />
-                <input className="border border-gray-400 p-2 text-xs"
-                       placeholder="Enter outflow..."
-                       type="number"
-                       name="outflow"
-                       value={newExpense.outflow ?? ''}
-                       onChange={handleChange}
-                />
-                <input className="border border-gray-400 p-2 text-xs"
-                       placeholder="Enter inflow..."
-                       type="number"
-                       name="inflow"
-                       value={newExpense.inflow ?? ''}
-                       onChange={handleChange}
-                />
-                <button className="cursor-pointer text-green-400 hover:text-green-600" type="submit">
-                    <IoMdAddCircleOutline className="w-[20px] h-[20px]"/>
-                </button>
-                <button className="cursor-pointer text-gray-400 hover:text-gray-700" type="button"
-                        onClick={cancelAddExpense}>
-                    <TbCancel className="w-[20px] h-[20px]"/>
-                </button>
-            </form>}
+            {showAddForm &&
+                <AddExpenseForm
+                    newExpense={newExpense}
+                    setNewExpense={setNewExpense}
+                    accounts={accounts}
+                    categories={categories}
+                    payees={payees}
+                    handleSubmit={handleAddExpense}
+                    handleCancel={cancelAddExpense}
+                />}
             <div>
                 <div>
                     <AgGridReact
