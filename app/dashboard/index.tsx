@@ -16,6 +16,8 @@ import {IoMdAddCircleOutline} from 'react-icons/io'
 import {DialogCalendar} from '@/components/DialogCalendar'
 import {read, utils} from 'xlsx'
 import {AddExpenseForm} from '@/dashboard/components/AddExpenseForm'
+import {BalanceSummary} from '@/components/BalanceSummary'
+import {formatCurrency, formatDate} from '@/utils'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
@@ -199,16 +201,6 @@ export function Index() {
         return !expense.date || !expense.account || !expense.payee || (!expense.inflow && !expense.outflow)
     }
 
-    const formatDate = (date: string) => {
-        return new Date(date).toLocaleDateString('en-CA')
-    }
-    const formatCurrency = (currency: number | null) => {
-        if (!currency) {
-            return ''
-        }
-        return new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format(currency)
-    }
-
     const onDateChange = (month: number, year: number) => {
         setMonth(month)
         setYear(year)
@@ -281,22 +273,12 @@ export function Index() {
                     onDateChange={onDateChange}
                 />
             </header>
-            <div className="flex flex-row gap-4 border-t border-gray-300 p-4 mt-8">
-                <div>
-                    <p className="text-green-600 text-xl">{formatCurrency(inflowsTotal)}</p>
-                    <p className="text-xs text-gray-500">Inflows</p>
-                </div>
-                <p>-</p>
-                <div>
-                    <p className="text-xl">{formatCurrency(outflowsTotal)}</p>
-                    <p className="text-xs text-gray-500">Outflows</p>
-                </div>
-                <p>=</p>
-                <div>
-                    <p className={`${negativeMonthlyTotal ? 'text-red-600' : 'text-green-600'} text-xl`}>{formatCurrency(inflowsTotal - outflowsTotal)}</p>
-                    <p className="text-xs text-gray-500">Monthly Total</p>
-                </div>
-            </div>
+            <BalanceSummary
+                className="p-4 mt-8 border-t border-gray-300"
+                inflowsTotal={inflowsTotal}
+                outflowsTotal={outflowsTotal}
+                negativeMonthlyTotal={negativeMonthlyTotal}
+            />
             <div className="flex justify-between border-t border-gray-300 py-2 px-4 text-sm">
                 <div className="flex flex-row gap-4">
                     <button className="flex items-center gap-1 text-blue-500 hover:text-blue-700 cursor-pointer"
