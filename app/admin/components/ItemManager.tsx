@@ -1,4 +1,4 @@
-import React, {type FormEvent, type ChangeEvent} from 'react'
+import {type FormEvent, type ChangeEvent} from 'react'
 import {FaRegSave} from 'react-icons/fa'
 import {TbCancel} from 'react-icons/tb'
 import {FaRegTrashCan} from 'react-icons/fa6'
@@ -37,7 +37,7 @@ export function ItemManager<T extends { id?: number; name: string }>(
                     type="text"
                     name={itemType.toLowerCase()}
                     placeholder={`Add ${itemType.toLowerCase()}...`}
-                    className="border-1 border-gray-200 rounded-md p-1 mr-2 w-3/4"
+                    className="input-styles p-1 mr-2 w-3/4"
                     value={newItem.name}
                     onChange={onItemChange}
                 />
@@ -67,8 +67,7 @@ export function ItemManager<T extends { id?: number; name: string }>(
                 {items.map((item) => (
                     <li
                         key={item.id}
-                        // className="odd:bg-white even:bg-gray-100"
-                        className="p-2"
+                        className="p-2 text-sm"
                         onClick={() => onItemClick(item)}
                     >
                         {item.name}

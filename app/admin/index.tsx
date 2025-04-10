@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import {type ChangeEvent, type FormEvent, useEffect, useState} from 'react'
 import {fakeAccounts, fakePayees, fakeCategories} from '@/fake-data'
 import {type Account, type Category, type Payee} from '@/types/common'
 import {ItemManager} from '@/admin/components/ItemManager'
@@ -29,7 +29,7 @@ export function Index() {
         }))
     }, [])
 
-    const handleItemChange = (itemType: keyof typeof itemState, e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleItemChange = (itemType: keyof typeof itemState, e: ChangeEvent<HTMLInputElement>) => {
         const {value} = e.target
         setItemState((prevState) => ({
             ...prevState,
@@ -40,7 +40,7 @@ export function Index() {
         }))
     }
 
-    const handleItemSubmit = (itemType: keyof typeof itemState, e: React.FormEvent<HTMLFormElement>) => {
+    const handleItemSubmit = (itemType: keyof typeof itemState, e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         const newItem = itemState[itemType].newItem
         if (!newItem.name) {
