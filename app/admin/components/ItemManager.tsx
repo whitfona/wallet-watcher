@@ -2,7 +2,7 @@ import React, {type FormEvent, type ChangeEvent} from 'react'
 import {FaRegSave} from 'react-icons/fa'
 import {TbCancel} from 'react-icons/tb'
 import {FaRegTrashCan} from 'react-icons/fa6'
-import {DialogConfirmButton} from '~/components/DialogConfirmButton'
+import {DialogConfirmButton} from '@/components/DialogConfirmButton'
 import {IoMdAddCircleOutline} from 'react-icons/io'
 
 interface ItemManagerProps<T> {

@@ -1,4 +1,4 @@
-import type {Account, Category, ExpenseRecord, Payee} from '~/types/common'
+import type {Account, Category, ExpenseRecord, Payee} from '@/types/common'
 
 export const fakeCategories: Category[] = [
     {

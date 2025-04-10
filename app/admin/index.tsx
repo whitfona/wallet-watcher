@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react'
-import {fakeAccounts, fakePayees, fakeCategories} from '~/fake-data'
-import {type Account, type Category, type Payee} from '~/types/common'
-import {ItemManager} from '~/admin/components/ItemManager'
-import {useToast} from '~/components/Toast'
+import {fakeAccounts, fakePayees, fakeCategories} from '@/fake-data'
+import {type Account, type Category, type Payee} from '@/types/common'
+import {ItemManager} from '@/admin/components/ItemManager'
+import {useToast} from '@/components/Toast'
 
 interface ItemState<T> {
     items: T[]
