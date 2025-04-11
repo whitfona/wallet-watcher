@@ -1,18 +1,18 @@
-import {Link} from 'react-router'
 import {AiOutlineDashboard} from 'react-icons/ai'
 import {GoGear} from 'react-icons/go'
+import {NavItem} from './NavItem'
+
+const navItems = [
+    {to: '/', icon: <AiOutlineDashboard/>, label: 'Dashboard'},
+    {to: '/admin', icon: <GoGear/>, label: 'Admin'},
+]
 
 export function Nav() {
     return (
         <nav className="flex justify-end gap-4">
-            <div className="flex items-center gap-1 text-gray-400 hover:text-gray-700">
-                <AiOutlineDashboard/>
-                <Link to={'/'}>Dashboard</Link>
-            </div>
-            <div className="flex items-center gap-1 text-gray-400 hover:text-gray-700">
-                <GoGear/>
-                <Link to={'/admin'}>Admin</Link>
-            </div>
+            {navItems.map((item) => (
+                <NavItem key={item.to} {...item} />
+            ))}
         </nav>
     )
 }
