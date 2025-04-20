@@ -1,8 +1,8 @@
 import {type ChangeEvent, type FormEvent, useEffect, useState} from 'react'
-import {fakeAccounts, fakePayees, fakeCategories} from '@/fake-data'
 import {type Account, type Category, type Payee} from '@/types/common'
 import {ItemManager} from '@/admin/components/ItemManager'
 import {useToast} from '@/components/Toast'
+import {supabase} from '@/utils/supabase'
 
 interface ItemState<T> {
     items: T[]
@@ -22,11 +22,30 @@ export function Index() {
     })
 
     useEffect(() => {
-        setItemState(() => ({
-            categories: {items: fakeCategories, newItem: {id: undefined, name: ''}},
-            payees: {items: fakePayees, newItem: {id: undefined, name: ''}},
-            accounts: {items: fakeAccounts, newItem: {id: undefined, name: ''}}
-        }))
+        const fetchData = async () => {
+                try {
+                    const [categoriesResponse, payeesResponse, accountsResponse] = await Promise.all([
+                        supabase.from('categories').select('*'),
+                        supabase.from('payees').select('*'),
+                        supabase.from('accounts').select('*')
+                    ])
+
+                    if (categoriesResponse.error) throw categoriesResponse.error
+                    if (payeesResponse.error) throw payeesResponse.error
+                    if (accountsResponse.error) throw accountsResponse.error
+
+                    setItemState(() => ({
+                        categories: {items: categoriesResponse.data, newItem: {id: undefined, name: ''}},
+                        payees: {items: payeesResponse.data, newItem: {id: undefined, name: ''}},
+                        accounts: {items: accountsResponse.data, newItem: {id: undefined, name: ''}}
+                    }))
+                } catch (error) {
+                    console.error('Error fetching data:', error)
+                    toast.error('Failed to load data')
+                }
+            }
+
+        ;(() => fetchData())()
     }, [])
 
     const handleItemChange = (itemType: keyof typeof itemState, e: ChangeEvent<HTMLInputElement>) => {
@@ -35,34 +54,60 @@ export function Index() {
             ...prevState,
             [itemType]: {
                 ...prevState[itemType],
-                newItem: {id: undefined, name: value}
+                newItem: {...prevState[itemType].newItem, name: value}
             }
         }))
     }
 
-    const handleItemSubmit = (itemType: keyof typeof itemState, e: FormEvent<HTMLFormElement>) => {
+    const handleItemSubmit = async (itemType: keyof typeof itemState, e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         const newItem = itemState[itemType].newItem
         if (!newItem.name) {
             return
         }
 
-        setItemState((prevState) => {
-            const updatedItems = newItem.id
-                ? prevState[itemType].items.map((item) =>
-                    item.id === newItem.id ? newItem : item
-                )
-                : [
-                    ...prevState[itemType].items,
-                    {...newItem, id: prevState[itemType].items.length + 1}
-                ]
+        try {
+            if (newItem.id) {
+                const {error} = await supabase
+                    .from(itemType)
+                    .update({name: newItem.name})
+                    .eq('id', newItem.id)
 
-            return {
-                ...prevState,
-                [itemType]: {items: updatedItems, newItem: {id: undefined, name: ''}}
+                if (error) {
+                    toast.error(`Error updating ${newItem.name}`)
+                    return
+                }
+
+                toast.success(`${newItem.name} has been updated successfully.`)
+            } else {
+                const {error} = await supabase
+                    .from(itemType)
+                    .insert([{name: newItem.name}])
+
+                if (error) {
+                    toast.error(`Error adding ${newItem.name}`)
+                    return
+                }
+
+                toast.success(`${newItem.name} has been added successfully.`)
             }
-        })
-        toast.success(`${newItem.name} has been updated successfully.`)
+
+            const {data, error} = await supabase
+                .from(itemType)
+                .select('*')
+
+            if (error) {
+                toast.error('Error refreshing data')
+                return
+            }
+
+            setItemState((prevState) => ({
+                ...prevState,
+                [itemType]: {items: data, newItem: {id: undefined, name: ''}}
+            }))
+        } catch (error) {
+            toast.error('An unexpected error occurred')
+        }
     }
 
     const handleItemCancel = (itemType: keyof typeof itemState) => {
@@ -74,7 +119,7 @@ export function Index() {
 
     const handleItemClick = <T extends keyof typeof itemState>(
         itemType: T,
-        item: typeof itemState[T]['newItem'] // Infer the type of item based on the itemType
+        item: typeof itemState[T]['newItem']
     ) => {
         setItemState((prevState) => ({
             ...prevState,
@@ -82,17 +127,39 @@ export function Index() {
         }))
     }
 
-    const handleItemDelete = (itemType: keyof typeof itemState, id: number) => {
-        setItemState((prevState) => {
-            const updatedItems = prevState[itemType].items.filter(
-                (item) => item.id !== id
-            )
-            return {
-                ...prevState,
-                [itemType]: {items: updatedItems, newItem: {id: undefined, name: ''}}
+    const handleItemDelete = async (itemType: keyof typeof itemState, id: number) => {
+        const itemToDelete = itemState[itemType].items.find(item => item.id === id)
+        if (!itemToDelete) return
+
+        try {
+            const {error} = await supabase
+                .from(itemType)
+                .delete()
+                .eq('id', id)
+
+            if (error) {
+                toast.error(`Error deleting ${itemToDelete.name}`)
+                return
             }
-        })
-        toast.success('Item has been deleted successfully.')
+
+            const {data, error: fetchError} = await supabase
+                .from(itemType)
+                .select('*')
+
+            if (fetchError) {
+                toast.error('Error refreshing data')
+                return
+            }
+
+            setItemState((prevState) => ({
+                ...prevState,
+                [itemType]: {items: data, newItem: {id: undefined, name: ''}}
+            }))
+
+            toast.success(`${itemToDelete.name} has been deleted successfully.`)
+        } catch (error) {
+            toast.error('An unexpected error occurred')
+        }
     }
 
     return (
