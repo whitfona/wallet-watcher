@@ -25,9 +25,9 @@ export function Index() {
         const fetchData = async () => {
                 try {
                     const [categoriesResponse, payeesResponse, accountsResponse] = await Promise.all([
-                        supabase.from('categories').select('*'),
-                        supabase.from('payees').select('*'),
-                        supabase.from('accounts').select('*')
+                        supabase.from('categories_view').select('*').order('name'),
+                        supabase.from('payees_view').select('*').order('name'),
+                        supabase.from('accounts_view').select('*').order('name')
                     ])
 
                     if (categoriesResponse.error) throw categoriesResponse.error
@@ -93,8 +93,9 @@ export function Index() {
             }
 
             const {data, error} = await supabase
-                .from(itemType)
+                .from(`${itemType}_view`)
                 .select('*')
+                .order('name')
 
             if (error) {
                 toast.error('Error refreshing data')
@@ -143,8 +144,9 @@ export function Index() {
             }
 
             const {data, error: fetchError} = await supabase
-                .from(itemType)
+                .from(`${itemType}_view`)
                 .select('*')
+                .order('name')
 
             if (fetchError) {
                 toast.error('Error refreshing data')
