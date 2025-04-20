@@ -4,6 +4,7 @@ import {TbCancel} from 'react-icons/tb'
 import {FaRegTrashCan} from 'react-icons/fa6'
 import {DialogConfirmButton} from '@/components/DialogConfirmButton'
 import {IoMdAddCircleOutline} from 'react-icons/io'
+import {Loader} from '@/components/Loader'
 
 interface ItemManagerProps<T> {
     title: string
@@ -46,8 +47,8 @@ export function ItemManager<T extends { id?: number; name: string }>(
                 />
                 <div className="flex gap-2">
                     {newItem.name && (
-                        <button 
-                            className="cursor-pointer text-green-400 hover:text-green-600 disabled:opacity-50 disabled:cursor-not-allowed" 
+                        <button
+                            className="cursor-pointer text-green-400 hover:text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
                             type="submit"
                             disabled={isLoading}
                         >
@@ -65,9 +66,9 @@ export function ItemManager<T extends { id?: number; name: string }>(
                         />
                     )}
                     {newItem.name && (
-                        <button 
-                            className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" 
-                            type="button" 
+                        <button
+                            className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            type="button"
                             onClick={onItemCancel}
                             disabled={isLoading}
                         >
@@ -78,7 +79,7 @@ export function ItemManager<T extends { id?: number; name: string }>(
             </form>
             <div className="mt-4">
                 {isLoading ? (
-                    <div className="text-gray-500 text-sm">Loading...</div>
+                    <Loader/>
                 ) : (
                     <ul className="space-y-2">
                         {items.map((item) => (
