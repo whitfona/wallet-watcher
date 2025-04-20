@@ -5,19 +5,22 @@ import {useToast} from '@/components/Toast'
 interface ItemState<T> {
     items: T[]
     newItem: T
+    isLoading: boolean
 }
 
 export function useItemManager<T extends { id?: number; name: string }>(tableName: string) {
     const toast = useToast()
     const [itemState, setItemState] = useState<ItemState<T>>({
         items: [],
-        newItem: {id: undefined, name: ''} as T
+        newItem: {id: undefined, name: ''} as T,
+        isLoading: true
     })
 
     const setItems = (items: T[]) => {
         setItemState(prevState => ({
             ...prevState,
-            items
+            items,
+            isLoading: false
         }))
     }
 
@@ -35,6 +38,11 @@ export function useItemManager<T extends { id?: number; name: string }>(tableNam
         if (!newItem.name) {
             return
         }
+
+        setItemState(prevState => ({
+            ...prevState,
+            isLoading: true
+        }))
 
         try {
             if (newItem.id) {
@@ -79,6 +87,11 @@ export function useItemManager<T extends { id?: number; name: string }>(tableNam
             }))
         } catch (error) {
             toast.error('An unexpected error occurred')
+        } finally {
+            setItemState(prevState => ({
+                ...prevState,
+                isLoading: false
+            }))
         }
     }
 
@@ -99,6 +112,11 @@ export function useItemManager<T extends { id?: number; name: string }>(tableNam
     const handleItemDelete = async (id: number) => {
         const itemToDelete = itemState.items.find(item => item.id === id)
         if (!itemToDelete) return
+
+        setItemState(prevState => ({
+            ...prevState,
+            isLoading: true
+        }))
 
         try {
             const {error} = await supabase
@@ -130,6 +148,11 @@ export function useItemManager<T extends { id?: number; name: string }>(tableNam
             toast.success(`${itemToDelete.name} has been deleted successfully.`)
         } catch (error) {
             toast.error('An unexpected error occurred')
+        } finally {
+            setItemState(prevState => ({
+                ...prevState,
+                isLoading: false
+            }))
         }
     }
 

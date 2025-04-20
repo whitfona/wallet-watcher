@@ -15,6 +15,7 @@ interface ItemManagerProps<T> {
     onItemCancel: () => void
     onItemClick: (item: T) => void
     onItemDelete: (id: number) => void
+    isLoading?: boolean
 }
 
 export function ItemManager<T extends { id?: number; name: string }>(
@@ -28,6 +29,7 @@ export function ItemManager<T extends { id?: number; name: string }>(
         onItemCancel,
         onItemClick,
         onItemDelete,
+        isLoading = false
     }: ItemManagerProps<T>) {
     return (
         <section>
@@ -40,10 +42,15 @@ export function ItemManager<T extends { id?: number; name: string }>(
                     className="input-styles p-1 mr-2 w-3/4"
                     value={newItem.name}
                     onChange={onItemChange}
+                    disabled={isLoading}
                 />
                 <div className="flex gap-2">
                     {newItem.name && (
-                        <button className="cursor-pointer text-green-400 hover:text-green-600" type="submit">
+                        <button 
+                            className="cursor-pointer text-green-400 hover:text-green-600 disabled:opacity-50 disabled:cursor-not-allowed" 
+                            type="submit"
+                            disabled={isLoading}
+                        >
                             {newItem.id ?
                                 <FaRegSave className="w-[20px] h-[20px]"/> :
                                 <IoMdAddCircleOutline className="w-[20px] h-[20px]"/>}
@@ -54,26 +61,38 @@ export function ItemManager<T extends { id?: number; name: string }>(
                             triggerText={<FaRegTrashCan className="w-[20px] h-[20px] text-red-300 hover:text-red-500"/>}
                             onAccept={() => onItemDelete(newItem.id!)}
                             deleteText={newItem.name}
+                            disabled={isLoading}
                         />
                     )}
                     {newItem.name && (
-                        <button className="cursor-pointer" type="button" onClick={onItemCancel}>
+                        <button 
+                            className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" 
+                            type="button" 
+                            onClick={onItemCancel}
+                            disabled={isLoading}
+                        >
                             <TbCancel className="w-[20px] h-[20px] text-gray-400 hover:text-gray-700"/>
                         </button>
                     )}
                 </div>
             </form>
-            <ul className="mt-2 border border-gray-200 rounded px-2 divide-y divide-gray-100 text-gray-700 max-h-[320px] overflow-auto">
-                {items.map((item) => (
-                    <li
-                        key={item.id}
-                        className="p-2 text-sm"
-                        onClick={() => onItemClick(item)}
-                    >
-                        {item.name}
-                    </li>
-                ))}
-            </ul>
+            <div className="mt-4">
+                {isLoading ? (
+                    <div className="text-gray-500 text-sm">Loading...</div>
+                ) : (
+                    <ul className="space-y-2">
+                        {items.map((item) => (
+                            <li
+                                key={item.id}
+                                className="flex items-center justify-between p-2 bg-gray-50 rounded cursor-pointer hover:bg-gray-100"
+                                onClick={() => onItemClick(item)}
+                            >
+                                <span>{item.name}</span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
         </section>
     )
 }

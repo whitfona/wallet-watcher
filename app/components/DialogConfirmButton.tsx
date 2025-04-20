@@ -7,6 +7,7 @@ interface ConfirmationButtonProps {
     deleteText?: string
     rejectButtonText?: string
     acceptButtonText?: string
+    disabled?: boolean
 }
 
 export const DialogConfirmButton = (
@@ -15,7 +16,8 @@ export const DialogConfirmButton = (
         onAccept,
         deleteText = 'these records',
         rejectButtonText = 'Cancel',
-        acceptButtonText = 'Delete'
+        acceptButtonText = 'Delete',
+        disabled = false
     }: ConfirmationButtonProps) => {
 
     const dialogRef = useRef<HTMLDialogElement>(null)
@@ -27,7 +29,9 @@ export const DialogConfirmButton = (
             dialogRef.current?.removeEventListener('close', closeDialog)
         }
     }, [])
+
     const openDialog = () => {
+        if (disabled) return
         dialogRef.current?.showModal()
         document.body.style.overflow = 'hidden'
     }
@@ -44,10 +48,16 @@ export const DialogConfirmButton = (
 
     return (
         <>
-            <button className="cursor-pointer" onClick={openDialog} type="button">{triggerText}</button>
+            <button 
+                className={`cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                onClick={openDialog} 
+                type="button"
+                disabled={disabled}
+            >
+                {triggerText}
+            </button>
 
             <dialog ref={dialogRef} className="place-self-center rounded-lg backdrop:bg-black/60">
-
                 <div className="flex items-center gap-2 border-b border-gray-200 py-4 px-6 text-xl">
                     <FiAlertCircle className="w-[30px] h-[30px] text-red-500"/>
                     <h1 className="font-bold">Are you sure?</h1>
@@ -74,7 +84,6 @@ export const DialogConfirmButton = (
                         {acceptButtonText}
                     </button>
                 </div>
-
             </dialog>
         </>
     )

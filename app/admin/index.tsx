@@ -49,6 +49,7 @@ export function Index() {
                     onItemCancel={categoriesManager.handleItemCancel}
                     onItemClick={categoriesManager.handleItemClick}
                     onItemDelete={categoriesManager.handleItemDelete}
+                    isLoading={categoriesManager.itemState.isLoading}
                 />
                 <ItemManager
                     title="Payees"
@@ -60,6 +61,7 @@ export function Index() {
                     onItemCancel={payeesManager.handleItemCancel}
                     onItemClick={payeesManager.handleItemClick}
                     onItemDelete={payeesManager.handleItemDelete}
+                    isLoading={payeesManager.itemState.isLoading}
                 />
                 <ItemManager
                     title="Accounts"
@@ -71,6 +73,7 @@ export function Index() {
                     onItemCancel={accountsManager.handleItemCancel}
                     onItemClick={accountsManager.handleItemClick}
                     onItemDelete={accountsManager.handleItemDelete}
+                    isLoading={accountsManager.itemState.isLoading}
                 />
             </div>
         </main>
