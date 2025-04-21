@@ -8,7 +8,6 @@ import {
 import {AgGridReact, type AgGridReactProps} from 'ag-grid-react'
 import {type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import {FaRegSave} from 'react-icons/fa'
-import {fakeAccounts, fakeCategories, fakeExpenses, fakePayees} from '@/fake-data'
 import type {ExpenseRecord, ExpenseFormData, SelectInterface} from '@/types/common'
 import {FaRegTrashCan} from 'react-icons/fa6'
 import {DialogConfirmButton} from '@/components/DialogConfirmButton'
@@ -18,35 +17,65 @@ import {read, utils} from 'xlsx'
 import {AddExpenseForm} from '@/dashboard/components/AddExpenseForm'
 import {BalanceSummary} from '@/components/BalanceSummary'
 import {formatCurrency, formatDate} from '@/utils/helpers'
+import {supabase} from '@/utils/supabase'
+import {useToast} from '@/components/Toast'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
     const theme = themeBalham.withPart(colorSchemeLightCold)
     const agGridRef = useRef<AgGridReact>(null)
+    const toast = useToast()
 
-    useEffect(() => {
-        const mappedAccounts: SelectInterface[] = fakeAccounts.map((account) => ({
-            value: account.id!,
-            label: account.name,
-        }))
-        setAccounts(mappedAccounts)
-        const mappedCategories: SelectInterface[] = fakeCategories.map((category) => ({
-            value: category.id!,
-            label: category.name,
-        }))
-        setCategories(mappedCategories)
-        const mappedPayees: SelectInterface[] = fakePayees.map((payee) => ({
-            value: payee.id!,
-            label: payee.name,
-        }))
-        setPayees(mappedPayees)
-        setRowData(fakeExpenses)
-    }, [])
     const [accounts, setAccounts] = useState<SelectInterface[]>([])
     const [categories, setCategories] = useState<SelectInterface[]>([])
     const [payees, setPayees] = useState<SelectInterface[]>([])
-
     const [rowData, setRowData] = useState<ExpenseRecord[]>([])
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchData = async () => {
+                try {
+                    setIsLoading(true)
+                    const [accountsResponse, categoriesResponse, payeesResponse] = await Promise.all([
+                        supabase.from('accounts_view').select('*').order('name', {ascending: true}),
+                        supabase.from('categories_view').select('*').order('name', {ascending: true}),
+                        supabase.from('payees_view').select('*').order('name', {ascending: true})
+                    ])
+
+                    if (accountsResponse.error) throw accountsResponse.error
+                    if (categoriesResponse.error) throw categoriesResponse.error
+                    if (payeesResponse.error) throw payeesResponse.error
+
+                    const mappedAccounts: SelectInterface[] = accountsResponse.data.map((account) => ({
+                        value: account.id,
+                        label: account.name,
+                    }))
+                    setAccounts(mappedAccounts)
+
+                    const mappedCategories: SelectInterface[] = categoriesResponse.data.map((category) => ({
+                        value: category.id,
+                        label: category.name,
+                    }))
+                    setCategories(mappedCategories)
+
+                    const mappedPayees: SelectInterface[] = payeesResponse.data.map((payee) => ({
+                        value: payee.id,
+                        label: payee.name,
+                    }))
+                    setPayees(mappedPayees)
+
+                    // TODO: Fetch expenses data from Supabase
+                    setRowData([])
+                } catch (error) {
+                    console.error('Error fetching data:', error)
+                    toast.error('Failed to load data')
+                } finally {
+                    setIsLoading(false)
+                }
+            }
+
+        ;(() => fetchData())()
+    }, [])
 
     const [colDefs, setColDefs] = useState<AgGridReactProps['columnDefs']>([
         {
@@ -58,21 +87,21 @@ export function Index() {
             field: 'account',
             cellEditor: 'agSelectCellEditor',
             cellEditorParams: {
-                values: fakeAccounts.map((account) => (account.name))
+                values: accounts.map((account) => account.label)
             },
         },
         {
             field: 'payee',
             cellEditor: 'agSelectCellEditor',
             cellEditorParams: {
-                values: fakePayees.map((payee) => (payee.name))
+                values: payees.map((payee) => payee.label)
             },
         },
         {
             field: 'category',
             cellEditor: 'agSelectCellEditor',
             cellEditorParams: {
-                values: fakeCategories.map((category) => (category.name))
+                values: categories.map((category) => category.label)
             },
         },
         {field: 'memo'},
