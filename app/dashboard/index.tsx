@@ -17,7 +17,7 @@ import {DialogCalendar} from '@/components/DialogCalendar'
 import {read, utils} from 'xlsx'
 import {AddExpenseForm} from '@/dashboard/components/AddExpenseForm'
 import {BalanceSummary} from '@/components/BalanceSummary'
-import {formatCurrency, formatDate} from '@/utils'
+import {formatCurrency, formatDate} from '@/utils/helpers'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])

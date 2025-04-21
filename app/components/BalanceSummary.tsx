@@ -1,4 +1,4 @@
-import {formatCurrency} from '@/utils'
+import {formatCurrency} from '@/utils/helpers'
 
 interface BalanceSummaryProps {
     inflowsTotal: number
