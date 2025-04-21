@@ -36,15 +36,17 @@ export function Index() {
         const fetchData = async () => {
                 try {
                     setIsLoading(true)
-                    const [accountsResponse, categoriesResponse, payeesResponse] = await Promise.all([
+                    const [accountsResponse, categoriesResponse, payeesResponse, expensesResponse] = await Promise.all([
                         supabase.from('accounts_view').select('*').order('name', {ascending: true}),
                         supabase.from('categories_view').select('*').order('name', {ascending: true}),
-                        supabase.from('payees_view').select('*').order('name', {ascending: true})
+                        supabase.from('payees_view').select('*').order('name', {ascending: true}),
+                        supabase.from('expenses_view').select('*').order('date', {ascending: false})
                     ])
 
                     if (accountsResponse.error) throw accountsResponse.error
                     if (categoriesResponse.error) throw categoriesResponse.error
                     if (payeesResponse.error) throw payeesResponse.error
+                    if (expensesResponse.error) throw expensesResponse.error
 
                     const mappedAccounts: SelectInterface[] = accountsResponse.data.map((account) => ({
                         value: account.id,
@@ -64,8 +66,17 @@ export function Index() {
                     }))
                     setPayees(mappedPayees)
 
-                    // TODO: Fetch expenses data from Supabase
-                    setRowData([])
+                    const mappedExpenses: ExpenseRecord[] = expensesResponse.data.map((expense) => ({
+                        id: expense.id,
+                        date: expense.date,
+                        account: expense.account_name,
+                        payee: expense.payee_name,
+                        category: expense.category_name,
+                        memo: expense.memo,
+                        outflow: expense.outflow,
+                        inflow: expense.inflow
+                    }))
+                    setRowData(mappedExpenses)
                 } catch (error) {
                     console.error('Error fetching data:', error)
                     toast.error('Failed to load data')
@@ -181,28 +192,58 @@ export function Index() {
         // pull fresh
     }
 
-    const handleAddExpense = (e: FormEvent) => {
+    const handleAddExpense = async (e: FormEvent) => {
         e.preventDefault()
         if (missingRequiredFields(newExpense)) {
-            // TODO: add validation message or toast?
-            console.log('error')
+            toast.error('Please fill in all required fields')
             return
         }
 
-        // send to db
-        // pull fresh data from the db
-        console.log('newExpense', newExpense)
-        setRowData([...rowData, newExpense])
-        setNewExpense({
-            id: null,
-            date: '',
-            account: null,
-            payee: null,
-            category: null,
-            memo: '',
-            inflow: null,
-            outflow: null
-        })
+        try {
+            const {data, error} = await supabase
+                .from('expenses')
+                .insert([{
+                    date: newExpense.date,
+                    account_id: newExpense.account,
+                    payee_id: newExpense.payee,
+                    category_id: newExpense.category,
+                    memo: newExpense.memo,
+                    outflow: newExpense.outflow,
+                    inflow: newExpense.inflow
+                }])
+                .select('*, accounts(name), categories(name), payees(name)')
+                .single()
+
+            if (error) throw error
+
+            const mappedExpense: ExpenseRecord = {
+                id: data.id,
+                date: data.date,
+                account: data.accounts.name,
+                payee: data.payees.name,
+                category: data.categories.name,
+                memo: data.memo,
+                outflow: data.outflow,
+                inflow: data.inflow
+            }
+
+            setRowData(prev => [...prev, mappedExpense])
+            toast.success('Expense added successfully')
+            setShowAddForm(false)
+            setNewExpense({
+                id: null,
+                date: '',
+                account: null,
+                payee: null,
+                category: null,
+                memo: '',
+                inflow: null,
+                outflow: null
+            })
+        } catch (error) {
+            console.error('Error adding expense:', error)
+            toast.error('Failed to add expense')
+        }
     }
 
     const deleteExpenses = () => {
@@ -251,41 +292,64 @@ export function Index() {
         inflow: number | null;
     }
 
-    const onFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const onFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (!e.target || !e.target.files) {
             return
         }
         const file = e.target.files[0]
         const reader = new FileReader()
 
-        reader.onload = (event: ProgressEvent<FileReader>) => {
+        reader.onload = async (event: ProgressEvent<FileReader>) => {
             if (!event.target) {
                 return
             }
-            const workbook = read(event.target.result, {type: 'binary'})
-            const sheetName = workbook.SheetNames[0]
-            const sheet = workbook.Sheets[sheetName]
-            const header = ['date', 'account', 'payee', 'category', 'memo', 'outflow', 'inflow']
-            const sheetData: SheetDataInterface[] = utils.sheet_to_json(sheet, {header: header})
-            const mappedData = sheetData.slice(1).map((item, index) => {
-                const account = accounts.find((account) => account.label === item.account)
-                const payee = payees.find((payee) => payee.label === item.payee)
-                const category = categories.find((account) => item.category && account.label.includes(item.category))
+            try {
+                const workbook = read(event.target.result, {type: 'binary'})
+                const sheetName = workbook.SheetNames[0]
+                const sheet = workbook.Sheets[sheetName]
+                const header = ['date', 'account', 'payee', 'category', 'memo', 'outflow', 'inflow']
+                const sheetData: SheetDataInterface[] = utils.sheet_to_json(sheet, {header: header})
 
-                return {
-                    date: new Date(item.date).toLocaleDateString(),
-                    account: account?.value || null,
-                    payee: payee?.value || item.payee || null,
-                    category: category?.value || null,
-                    memo: item.memo || '',
-                    outflow: item.outflow || null,
-                    inflow: item.inflow || null
-                }
-            })
+                const expensesToInsert = sheetData.slice(1).map((item) => {
+                    const account = accounts.find((account) => account.label === item.account)
+                    const payee = payees.find((payee) => payee.label === item.payee)
+                    const category = categories.find((category) => item.category && category.label.includes(item.category))
 
-            // send mappedData to backend
-            setRowData((prev) => [...prev, ...mappedData])
-            console.log(mappedData)
+                    return {
+                        date: new Date(item.date).toISOString(),
+                        account_id: account?.value || null,
+                        payee_id: payee?.value || null,
+                        category_id: category?.value || null,
+                        memo: item.memo || '',
+                        outflow: item.outflow || null,
+                        inflow: item.inflow || null
+                    }
+                }).filter(expense => expense.account_id && expense.payee_id && expense.category_id)
+
+                const {data, error} = await supabase
+                    .from('expenses')
+                    .insert(expensesToInsert)
+                    .select('*, accounts(name), categories(name), payees(name)')
+
+                if (error) throw error
+
+                const mappedExpenses: ExpenseRecord[] = data.map((expense) => ({
+                    id: expense.id,
+                    date: expense.date,
+                    account: expense.accounts.name,
+                    payee: expense.payees.name,
+                    category: expense.categories.name,
+                    memo: expense.memo,
+                    outflow: expense.outflow,
+                    inflow: expense.inflow
+                }))
+
+                setRowData(prev => [...prev, ...mappedExpenses])
+                toast.success('Expenses imported successfully')
+            } catch (error) {
+                console.error('Error importing expenses:', error)
+                toast.error('Failed to import expenses')
+            }
         }
 
         reader.readAsArrayBuffer(file)
