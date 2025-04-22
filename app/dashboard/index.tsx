@@ -200,7 +200,7 @@ export function Index() {
         }
 
         try {
-            const {data, error} = await supabase
+            const {error} = await supabase
                 .from('expenses')
                 .insert([{
                     date: newExpense.date,
@@ -211,23 +211,23 @@ export function Index() {
                     outflow: newExpense.outflow,
                     inflow: newExpense.inflow
                 }])
-                .select('*, accounts(name), categories(name), payees(name)')
-                .single()
 
-            if (error) throw error
-
-            const mappedExpense: ExpenseRecord = {
-                id: data.id,
-                date: data.date,
-                account: data.accounts.name,
-                payee: data.payees.name,
-                category: data.categories.name,
-                memo: data.memo,
-                outflow: data.outflow,
-                inflow: data.inflow
+            if (error) {
+                toast.error('Failed to add expense')
+                return
             }
 
-            setRowData(prev => [...prev, mappedExpense])
+            const {data: expensesData, error: fetchError} = await supabase
+                .from('expenses_view')
+                .select('*')
+                .order('date', {ascending: false})
+
+            if (fetchError) {
+                toast.error('Failed to refresh expenses')
+                return
+            }
+
+            setRowData(expensesData)
             toast.success('Expense added successfully')
             setShowAddForm(false)
             setNewExpense({
@@ -242,7 +242,7 @@ export function Index() {
             })
         } catch (error) {
             console.error('Error adding expense:', error)
-            toast.error('Failed to add expense')
+            toast.error('An unexpected error occurred')
         }
     }
 
