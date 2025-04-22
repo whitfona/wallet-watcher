@@ -166,7 +166,7 @@ export function Index() {
         })
     }
 
-    const handleCellValueChange = (event: CellValueChangedEvent) => {
+    const handleCellValueChange = async (event: CellValueChangedEvent) => {
         const expenseId = event.data.id
         const field = event.colDef.field
         let newValue = event.newValue
@@ -175,21 +175,51 @@ export function Index() {
             return
         }
 
-        if (field === 'account') {
-            newValue = accounts.find((account) => account.label === newValue)?.value ?? null
+        try {
+            // Map the field names to match the database columns
+            const dbFieldMap: Record<string, string> = {
+                account: 'account_id',
+                category: 'category_id',
+                payee: 'payee_id'
+            }
+
+            const dbField = dbFieldMap[field] || field
+
+            // Convert the value to the correct type if needed
+            if (field === 'account') {
+                newValue = accounts.find((account) => account.label === newValue)?.value ?? null
+            } else if (field === 'category') {
+                newValue = categories.find((category) => category.label === newValue)?.value ?? null
+            } else if (field === 'payee') {
+                newValue = payees.find((payee) => payee.label === newValue)?.value ?? null
+            }
+
+            const {error} = await supabase
+                .from('expenses')
+                .update({[dbField]: newValue})
+                .eq('id', expenseId)
+
+            if (error) {
+                toast.error('Failed to update expense')
+                return
+            }
+
+            const {data: expensesData, error: fetchError} = await supabase
+                .from('expenses_view')
+                .select('*')
+                .order('date', {ascending: false})
+
+            if (fetchError) {
+                toast.error('Failed to refresh expenses')
+                return
+            }
+
+            setRowData(expensesData)
+            toast.success('Expense updated successfully')
+        } catch (error) {
+            console.error('Error updating expense:', error)
+            toast.error('An unexpected error occurred')
         }
-
-        if (field === 'category') {
-
-            newValue = categories.find((category) => category.label === newValue)?.value ?? null
-        }
-
-        if (field === 'payee') {
-            newValue = payees.find((payee) => payee.label === newValue)?.value ?? null
-        }
-
-        // send to db with expenseId, field and newValue
-        // pull fresh
     }
 
     const handleAddExpense = async (e: FormEvent) => {
