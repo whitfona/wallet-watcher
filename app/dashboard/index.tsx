@@ -246,19 +246,42 @@ export function Index() {
         }
     }
 
-    const deleteExpenses = () => {
+    const deleteExpenses = async () => {
         const selectedExpenses = agGridRef.current?.api?.getSelectedRows()
 
-        if (!selectedExpenses) {
+        if (!selectedExpenses || selectedExpenses.length === 0) {
             return
         }
 
         const expenseIdsToDelete = selectedExpenses.map(expense => expense.id)
-        console.log(expenseIdsToDelete)
 
-        // add confirmation modal
-        // send to db with expenseIds
-        // pull fresh
+        try {
+            const {error} = await supabase
+                .from('expenses')
+                .delete()
+                .in('id', expenseIdsToDelete)
+
+            if (error) {
+                toast.error('Failed to delete expenses')
+                return
+            }
+
+            const {data: expensesData, error: fetchError} = await supabase
+                .from('expenses_view')
+                .select('*')
+                .order('date', {ascending: false})
+
+            if (fetchError) {
+                toast.error('Failed to refresh expenses')
+                return
+            }
+
+            setRowData(expensesData)
+            toast.success('Expenses deleted successfully')
+        } catch (error) {
+            console.error('Error deleting expenses:', error)
+            toast.error('An unexpected error occurred')
+        }
     }
 
     const onRowSelected = () => {
