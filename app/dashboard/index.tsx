@@ -32,6 +32,51 @@ export function Index() {
     const [rowData, setRowData] = useState<ExpenseRecord[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
+    const [colDefs, setColDefs] = useState<AgGridReactProps['columnDefs']>([])
+
+    // Update column definitions when accounts, categories, or payees change
+    useEffect(() => {
+        setColDefs([
+            {
+                field: 'date',
+                cellDataType: 'dateString',
+                valueFormatter: (params: any) => formatDate(params.value)
+            },
+            {
+                field: 'account',
+                cellEditor: 'agSelectCellEditor',
+                cellEditorParams: {
+                    values: accounts.map((account) => account.label)
+                },
+            },
+            {
+                field: 'payee',
+                cellEditor: 'agSelectCellEditor',
+                cellEditorParams: {
+                    values: payees.map((payee) => payee.label)
+                },
+            },
+            {
+                field: 'category',
+                cellEditor: 'agSelectCellEditor',
+                cellEditorParams: {
+                    values: categories.map((category) => category.label)
+                },
+            },
+            {field: 'memo'},
+            {
+                field: 'outflow',
+                cellDataType: 'number',
+                valueFormatter: (params: any) => formatCurrency(params.value)
+            },
+            {
+                field: 'inflow',
+                cellDataType: 'number',
+                valueFormatter: (params: any) => formatCurrency(params.value)
+            },
+        ])
+    }, [accounts, categories, payees])
+
     useEffect(() => {
         const fetchData = async () => {
                 try {
@@ -87,46 +132,6 @@ export function Index() {
 
         ;(() => fetchData())()
     }, [])
-
-    const [colDefs, setColDefs] = useState<AgGridReactProps['columnDefs']>([
-        {
-            field: 'date',
-            cellDataType: 'dateString',
-            valueFormatter: (params: any) => formatDate(params.value)
-        },
-        {
-            field: 'account',
-            cellEditor: 'agSelectCellEditor',
-            cellEditorParams: {
-                values: accounts.map((account) => account.label)
-            },
-        },
-        {
-            field: 'payee',
-            cellEditor: 'agSelectCellEditor',
-            cellEditorParams: {
-                values: payees.map((payee) => payee.label)
-            },
-        },
-        {
-            field: 'category',
-            cellEditor: 'agSelectCellEditor',
-            cellEditorParams: {
-                values: categories.map((category) => category.label)
-            },
-        },
-        {field: 'memo'},
-        {
-            field: 'outflow',
-            cellDataType: 'number',
-            valueFormatter: (params: any) => formatCurrency(params.value)
-        },
-        {
-            field: 'inflow',
-            cellDataType: 'number',
-            valueFormatter: (params: any) => formatCurrency(params.value)
-        },
-    ])
 
     const defaultColDef = useMemo(() => ({
         filter: true,
