@@ -111,17 +111,7 @@ export function Index() {
                     }))
                     setPayees(mappedPayees)
 
-                    const mappedExpenses: ExpenseRecord[] = expensesResponse.data.map((expense) => ({
-                        id: expense.id,
-                        date: expense.date,
-                        account: expense.account_name,
-                        payee: expense.payee_name,
-                        category: expense.category_name,
-                        memo: expense.memo,
-                        outflow: expense.outflow,
-                        inflow: expense.inflow
-                    }))
-                    setRowData(mappedExpenses)
+                    setRowData(expensesResponse.data)
                 } catch (error) {
                     console.error('Error fetching data:', error)
                     toast.error('Failed to load data')
@@ -387,22 +377,11 @@ export function Index() {
                 const {data, error} = await supabase
                     .from('expenses')
                     .insert(expensesToInsert)
-                    .select('*, accounts(name), categories(name), payees(name)')
+                    .select('*')
 
                 if (error) throw error
 
-                const mappedExpenses: ExpenseRecord[] = data.map((expense) => ({
-                    id: expense.id,
-                    date: expense.date,
-                    account: expense.accounts.name,
-                    payee: expense.payees.name,
-                    category: expense.categories.name,
-                    memo: expense.memo,
-                    outflow: expense.outflow,
-                    inflow: expense.inflow
-                }))
-
-                setRowData(prev => [...prev, ...mappedExpenses])
+                setRowData(prev => [...prev, ...data])
                 toast.success('Expenses imported successfully')
             } catch (error) {
                 console.error('Error importing expenses:', error)
