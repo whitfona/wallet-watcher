@@ -88,10 +88,22 @@ export function Index() {
                         supabase.from('expenses_view').select('*').order('date', {ascending: false})
                     ])
 
-                    if (accountsResponse.error) throw accountsResponse.error
-                    if (categoriesResponse.error) throw categoriesResponse.error
-                    if (payeesResponse.error) throw payeesResponse.error
-                    if (expensesResponse.error) throw expensesResponse.error
+                    if (accountsResponse.error) {
+                        toast.error('Failed to load accounts')
+                        return
+                    }
+                    if (categoriesResponse.error) {
+                        toast.error('Failed to load categories')
+                        return
+                    }
+                    if (payeesResponse.error) {
+                        toast.error('Failed to load payees')
+                        return
+                    }
+                    if (expensesResponse.error) {
+                        toast.error('Failed to load expenses')
+                        return
+                    }
 
                     const mappedAccounts: SelectInterface[] = accountsResponse.data.map((account) => ({
                         value: account.id,
@@ -225,12 +237,29 @@ export function Index() {
         }
 
         try {
+            // If payee is a string (new payee), create it first
+            let payeeId = newExpense.payee
+            if (typeof newExpense.payee === 'string') {
+                const {data: newPayee, error: payeeError} = await supabase
+                    .from('payees')
+                    .insert([{name: newExpense.payee}])
+                    .select()
+                    .single()
+
+                if (payeeError) {
+                    toast.error('Failed to create new payee')
+                    return
+                }
+
+                payeeId = newPayee.id
+            }
+
             const {error} = await supabase
                 .from('expenses')
                 .insert([{
                     date: newExpense.date,
                     account_id: newExpense.account,
-                    payee_id: newExpense.payee,
+                    payee_id: payeeId,
                     category_id: newExpense.category,
                     memo: newExpense.memo,
                     outflow: newExpense.outflow,
@@ -242,17 +271,28 @@ export function Index() {
                 return
             }
 
-            const {data: expensesData, error: fetchError} = await supabase
-                .from('expenses_view')
-                .select('*')
-                .order('date', {ascending: false})
+            // Refresh all data to get the new payee and expense
+            const [payeesResponse, expensesResponse] = await Promise.all([
+                supabase.from('payees_view').select('*').order('name', {ascending: true}),
+                supabase.from('expenses_view').select('*').order('date', {ascending: false})
+            ])
 
-            if (fetchError) {
+            if (payeesResponse.error) {
+                toast.error('Failed to refresh payees')
+                return
+            }
+            if (expensesResponse.error) {
                 toast.error('Failed to refresh expenses')
                 return
             }
 
-            setRowData(expensesData)
+            const mappedPayees: SelectInterface[] = payeesResponse.data.map((payee) => ({
+                value: payee.id,
+                label: payee.name,
+            }))
+            setPayees(mappedPayees)
+            setRowData(expensesResponse.data)
+
             toast.success('Expense added successfully')
             setShowAddForm(false)
             setNewExpense({
@@ -379,7 +419,10 @@ export function Index() {
                     .insert(expensesToInsert)
                     .select('*')
 
-                if (error) throw error
+                if (error) {
+                    toast.error('Failed to import expenses')
+                    return
+                }
 
                 setRowData(prev => [...prev, ...data])
                 toast.success('Expenses imported successfully')
