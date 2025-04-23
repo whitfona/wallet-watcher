@@ -1,5 +1,8 @@
 export const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-CA')
+    const parsedDate = new Date(date)
+    
+    parsedDate.setMinutes(parsedDate.getMinutes() + parsedDate.getTimezoneOffset())
+    return parsedDate.toLocaleDateString('en-CA')
 }
 
 export const formatCurrency = (currency: number | null) => {
