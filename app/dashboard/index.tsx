@@ -412,19 +412,28 @@ export function Index() {
                         outflow: item.outflow || null,
                         inflow: item.inflow || null
                     }
-                }).filter(expense => expense.account_id && expense.payee_id && expense.category_id)
+                })
 
-                const {data, error} = await supabase
+                const {error} = await supabase
                     .from('expenses')
                     .insert(expensesToInsert)
-                    .select('*')
 
                 if (error) {
                     toast.error('Failed to import expenses')
                     return
                 }
 
-                setRowData(prev => [...prev, ...data])
+                const {data: expensesData, error: fetchError} = await supabase
+                    .from('expenses_view')
+                    .select('*')
+                    .order('date', {ascending: false})
+
+                if (fetchError) {
+                    toast.error('Failed to refresh expenses')
+                    return
+                }
+
+                setRowData(expensesData)
                 toast.success('Expenses imported successfully')
             } catch (error) {
                 console.error('Error importing expenses:', error)
