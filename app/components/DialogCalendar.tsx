@@ -40,7 +40,7 @@ export const DialogCalendar = ({initialMonth, initialYear, onDateChange, classNa
         if (month && year && onDateChange) {
             onDateChange(month, year)
         }
-    }, [month, onDateChange])
+    }, [month, year])
 
     const openCalendar = () => {
         calendarRef.current?.showModal()

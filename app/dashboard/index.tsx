@@ -81,11 +81,10 @@ export function Index() {
         const fetchData = async () => {
                 try {
                     setIsLoading(true)
-                    const [accountsResponse, categoriesResponse, payeesResponse, expensesResponse] = await Promise.all([
+                    const [accountsResponse, categoriesResponse, payeesResponse] = await Promise.all([
                         supabase.from('accounts_view').select('*').order('name', {ascending: true}),
                         supabase.from('categories_view').select('*').order('name', {ascending: true}),
-                        supabase.from('payees_view').select('*').order('name', {ascending: true}),
-                        supabase.from('expenses_view').select('*').order('date', {ascending: false})
+                        supabase.from('payees_view').select('*').order('name', {ascending: true})
                     ])
 
                     if (accountsResponse.error) {
@@ -98,10 +97,6 @@ export function Index() {
                     }
                     if (payeesResponse.error) {
                         toast.error('Failed to load payees')
-                        return
-                    }
-                    if (expensesResponse.error) {
-                        toast.error('Failed to load expenses')
                         return
                     }
 
@@ -123,7 +118,7 @@ export function Index() {
                     }))
                     setPayees(mappedPayees)
 
-                    setRowData(expensesResponse.data)
+                    await fetchExpenses(month, year)
                 } catch (error) {
                     console.error('Error fetching data:', error)
                     toast.error('Failed to load data')
@@ -135,9 +130,33 @@ export function Index() {
         ;(() => fetchData())()
     }, [])
 
+    const fetchExpenses = async (selectedMonth: number, selectedYear: number) => {
+        try {
+            const endMonth = selectedMonth === 12 ? 1 : selectedMonth + 1
+            const endYear = selectedMonth === 12 ? selectedYear + 1 : selectedYear
+
+            const {data: expensesData, error: fetchError} = await supabase
+                .from('expenses_view')
+                .select('*')
+                .gte('date', `${selectedYear}-${selectedMonth}-01`)
+                .lte('date', `${endYear}-${endMonth}-01`)
+                .order('date', {ascending: false})
+
+            if (fetchError) {
+                toast.error('Failed to refresh expenses')
+                return
+            }
+
+            setRowData(expensesData)
+        } catch (error) {
+            console.error('Error fetching expenses:', error)
+            toast.error('An unexpected error occurred')
+        }
+    }
+
     const defaultColDef = useMemo(() => ({
         filter: true,
-        editable: true, // TODO: Handle these changes
+        editable: true,
     }), [])
 
     const fileUploadRef = useRef<HTMLInputElement>(null)
@@ -211,17 +230,7 @@ export function Index() {
                 return
             }
 
-            const {data: expensesData, error: fetchError} = await supabase
-                .from('expenses_view')
-                .select('*')
-                .order('date', {ascending: false})
-
-            if (fetchError) {
-                toast.error('Failed to refresh expenses')
-                return
-            }
-
-            setRowData(expensesData)
+            await fetchExpenses(month, year)
             toast.success('Expense updated successfully')
         } catch (error) {
             console.error('Error updating expense:', error)
@@ -272,17 +281,13 @@ export function Index() {
             }
 
             // Refresh all data to get the new payee and expense
-            const [payeesResponse, expensesResponse] = await Promise.all([
-                supabase.from('payees_view').select('*').order('name', {ascending: true}),
-                supabase.from('expenses_view').select('*').order('date', {ascending: false})
-            ])
+            const payeesResponse = await supabase
+                .from('payees_view')
+                .select('*')
+                .order('name', {ascending: true})
 
             if (payeesResponse.error) {
                 toast.error('Failed to refresh payees')
-                return
-            }
-            if (expensesResponse.error) {
-                toast.error('Failed to refresh expenses')
                 return
             }
 
@@ -291,7 +296,7 @@ export function Index() {
                 label: payee.name,
             }))
             setPayees(mappedPayees)
-            setRowData(expensesResponse.data)
+            await fetchExpenses(month, year)
 
             toast.success('Expense added successfully')
             setShowAddForm(false)
@@ -331,17 +336,7 @@ export function Index() {
                 return
             }
 
-            const {data: expensesData, error: fetchError} = await supabase
-                .from('expenses_view')
-                .select('*')
-                .order('date', {ascending: false})
-
-            if (fetchError) {
-                toast.error('Failed to refresh expenses')
-                return
-            }
-
-            setRowData(expensesData)
+            await fetchExpenses(month, year)
             toast.success('Expenses deleted successfully')
         } catch (error) {
             console.error('Error deleting expenses:', error)
@@ -359,11 +354,11 @@ export function Index() {
         return !expense.date || !expense.account || !expense.payee || (!expense.inflow && !expense.outflow)
     }
 
-    const onDateChange = (month: number, year: number) => {
+    const onDateChange = async (month: number, year: number) => {
         setMonth(month)
         setYear(year)
 
-        // fetch data based on new year
+        await fetchExpenses(month, year)
     }
 
     const handleFileImportClick = () => {
