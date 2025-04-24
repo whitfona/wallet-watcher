@@ -1,10 +1,10 @@
 import React, {createContext, useCallback, useContext, useState} from 'react'
 import {FiAlertCircle} from 'react-icons/fi'
-import {formatCurrency, formatDate} from '@/utils/helpers'
-import type {ExpenseFormData} from '@/types/common'
+import type {ExpenseRecord} from '@/types/common'
+import {RenderExpenseDetails} from '@/components/RenderExpenseDetails'
 
 interface DuplicateExpenseContextType {
-    showDuplicateDialog: (expense: ExpenseFormData, matchingExpense: ExpenseFormData, onAccept: () => void, onReject: () => void) => void
+    showDuplicateDialog: (expense: ExpenseRecord, matchingExpense: ExpenseRecord, onAccept: () => void, onReject: () => void) => void
 }
 
 interface DuplicateExpenseDialogProps {
@@ -13,59 +13,13 @@ interface DuplicateExpenseDialogProps {
 
 interface DialogState {
     isOpen: boolean
-    expense: ExpenseFormData | null
-    matchingExpense: ExpenseFormData | null
+    expense: ExpenseRecord | null
+    matchingExpense: ExpenseRecord | null
     onAccept: (() => void) | null
     onReject: (() => void) | null
 }
 
 const DuplicateExpenseContext = createContext<DuplicateExpenseContextType | undefined>(undefined)
-
-const renderExpenseDetails = (expense: ExpenseFormData, title: string) => (
-    <div className="bg-gray-50 p-4 rounded-lg text-sm">
-        <h3 className="font-medium mb-2">{title}</h3>
-        <div className="grid grid-cols-2 gap-2">
-            <div className="font-medium">Date:</div>
-            <div>{formatDate(expense.date)}</div>
-
-            <div className="font-medium">Account:</div>
-            <div>{expense.account}</div>
-
-            {expense.payee && (
-                <>
-                    <div className="font-medium">Payee:</div>
-                    <div>{expense.payee}</div>
-                </>
-            )}
-
-            {expense.category && (
-                <>
-                    <div className="font-medium">Category:</div>
-                    <div>{expense.category}</div>
-                </>
-            )}
-
-            {expense.memo && (
-                <>
-                    <div className="font-medium">Memo:</div>
-                    <div>{expense.memo}</div>
-                </>
-            )}
-
-            {expense.inflow ? (
-                <>
-                    <div className="font-medium">Inflow:</div>
-                    <div className="text-green-600">{formatCurrency(expense.inflow)}</div>
-                </>
-            ) : (
-                <>
-                    <div className="font-medium">Outflow:</div>
-                    <div className="text-red-600">{formatCurrency(expense.outflow)}</div>
-                </>
-            )}
-        </div>
-    </div>
-)
 
 export const DuplicateExpenseProvider: React.FC<DuplicateExpenseDialogProps> = ({children}) => {
     const [dialogState, setDialogState] = useState<DialogState>({
@@ -77,8 +31,8 @@ export const DuplicateExpenseProvider: React.FC<DuplicateExpenseDialogProps> = (
     })
 
     const showDuplicateDialog = useCallback((
-        expense: ExpenseFormData,
-        matchingExpense: ExpenseFormData,
+        expense: ExpenseRecord,
+        matchingExpense: ExpenseRecord,
         onAccept: () => void,
         onReject: () => void
     ) => {
@@ -116,19 +70,21 @@ export const DuplicateExpenseProvider: React.FC<DuplicateExpenseDialogProps> = (
                     open
                     className="fixed inset-0 z-50 m-0 p-0 h-full w-full bg-transparent"
                 >
-                    <div className="fixed inset-0 bg-black/60" onClick={handleReject} />
-                    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl">
+                    <div className="fixed inset-0 bg-black/60" onClick={handleReject}/>
+                    <div
+                        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl">
                         <div className="flex items-center gap-2 border-b border-gray-200 py-4 px-6 text-xl">
                             <FiAlertCircle className="w-[30px] h-[30px] text-red-500"/>
                             <h1 className="font-bold">Possible Duplicate Expense</h1>
                         </div>
 
                         <div className="py-4 px-6">
-                            <p className="text-sm mb-4">An expense with the same date, account, and amount already exists:</p>
+                            <p className="text-sm mb-4">An expense with the same date, account, and amount already
+                                exists:</p>
 
                             <div className="space-y-4">
-                                {renderExpenseDetails(dialogState.matchingExpense, 'Existing Expense')}
-                                {renderExpenseDetails(dialogState.expense, 'New Expense')}
+                                {RenderExpenseDetails(dialogState.matchingExpense, 'Existing Expense')}
+                                {RenderExpenseDetails(dialogState.expense, 'New Expense')}
                             </div>
                         </div>
 

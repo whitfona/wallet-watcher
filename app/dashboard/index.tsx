@@ -279,17 +279,14 @@ export function Index() {
         if (matchingExpense) {
             setShowAddForm(false)
             showDuplicateDialog(
-                newExpense,
                 {
-                    id: matchingExpense.id,
-                    date: matchingExpense.date,
-                    account: accounts.find(acc => acc.label === matchingExpense.account)?.value ?? null,
-                    payee: payees.find(p => p.label === matchingExpense.payee)?.value ?? null,
-                    category: categories.find(c => c.label === matchingExpense.category)?.value ?? null,
-                    memo: matchingExpense.memo,
-                    inflow: matchingExpense.inflow,
-                    outflow: matchingExpense.outflow
+                    ...newExpense,
+                    id: -1, // here to appease typescript
+                    account: accounts.find(account => account.value === newExpense.account)?.label ?? '',
+                    payee: payees.find(payee => payee.value === newExpense.payee)?.label ?? '',
+                    category: categories.find(category => category.value === newExpense.category)?.label ?? '',
                 },
+                matchingExpense,
                 async () => {
                     await addExpenseToDatabase(newExpense)
                 },
