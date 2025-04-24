@@ -54,7 +54,7 @@ export const useConfirmDuplicate = (
                 <div>{formatDate(expense.date)}</div>
 
                 <div className="font-medium">Account:</div>
-                <div>{expense.account && true ? getAccountLabel?.(expense.account) : ''}</div>
+                <div>{expense.account && getAccountLabel?.(expense.account)}</div>
 
                 {expense.payee && typeof expense.payee === 'number' && (
                     <>
@@ -63,7 +63,7 @@ export const useConfirmDuplicate = (
                     </>
                 )}
 
-                {expense.category && typeof expense.category === 'number' && (
+                {expense.category && (
                     <>
                         <div className="font-medium">Category:</div>
                         <div>{getCategoryLabel?.(expense.category)}</div>
