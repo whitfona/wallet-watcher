@@ -4,32 +4,32 @@
 
 - [x] Display expenses in a table
 - [x] Make columns sortable and filterable
-- [ ] Allow user to add single expense
-- [ ] Allow user to edit an expense
-- [ ] Allow user to delete an expense
-- [ ] Allow user to upload an excel file of expenses
-- [ ] Only show expenses for the month
-- [ ] Allow user to visit previous/ future months
-- [ ] Add confirmation modal for deletes
-- [ ] Add toasts for success and failures
+- [x] Allow user to add single expense
+- [x] Allow user to edit an expense
+- [x] Allow user to delete an expense
+- [x] Allow user to upload an excel file of expenses
+- [x] Only show expenses for the month
+- [x] Allow user to visit previous/ future months
+- [x] Add confirmation modal for deletes
+- [x] Add toasts for success and failures
 - [ ] Add AI to help with categorizing expenses (maybe?)
 - [ ] Allow user to view a range of months (maybe?)
 - [ ] Allow user to mass edit expenses (maybe?)
 
 ## Admin
 
-- [ ] Accounts
-    - [ ] Add
-    - [ ] Edit
-    - [ ] Delete
-- [ ] Categories
-    - [ ] Add
-    - [ ] Edit
-    - [ ] Delete
-- [ ] Payees
-    - [ ] Add
-    - [ ] Edit
-    - [ ] Delete
+- [x] Accounts
+    - [x] Add
+    - [x] Edit
+    - [x] Delete
+- [x] Categories
+    - [x] Add
+    - [x] Edit
+    - [x] Delete
+- [x] Payees
+    - [x] Add
+    - [x] Edit
+    - [x] Delete
 
 ## Charts
 
