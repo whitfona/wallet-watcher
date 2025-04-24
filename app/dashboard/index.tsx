@@ -36,7 +36,6 @@ export function Index() {
 
     const [colDefs, setColDefs] = useState<AgGridReactProps['columnDefs']>([])
 
-    // Update column definitions when accounts, categories, or payees change
     useEffect(() => {
         setColDefs([
             {
@@ -164,7 +163,6 @@ export function Index() {
     const fileUploadRef = useRef<HTMLInputElement>(null)
     const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
     const [year, setYear] = useState<number>(new Date().getFullYear())
-    const [isDuplicateExpense, setIsDuplicateExpense] = useState(false)
     const [showAddForm, setShowAddForm] = useState(false)
     const [showDeleteButton, setShowDeleteButton] = useState(false)
     const [newExpense, setNewExpense] = useState<ExpenseFormData>({
@@ -183,6 +181,10 @@ export function Index() {
 
     const cancelAddExpense = () => {
         setShowAddForm(false)
+        resetNewExpense()
+    }
+
+    const resetNewExpense = () => {
         setNewExpense({
             id: null,
             date: '',
@@ -205,6 +207,7 @@ export function Index() {
         }
 
         try {
+            // TODO: Is this mapping still needed?
             // Map the field names to match the database columns
             const dbFieldMap: Record<string, string> = {
                 account: 'account_id',
@@ -290,18 +293,7 @@ export function Index() {
                 async () => {
                     await addExpenseToDatabase(newExpense)
                 },
-                () => {
-                    setNewExpense({
-                        id: null,
-                        date: '',
-                        account: null,
-                        payee: null,
-                        category: null,
-                        memo: '',
-                        inflow: null,
-                        outflow: null
-                    })
-                }
+                () => resetNewExpense()
             )
             return
         }
@@ -365,16 +357,7 @@ export function Index() {
 
             toast.success('Expense added successfully')
             setShowAddForm(false)
-            setNewExpense({
-                id: null,
-                date: '',
-                account: null,
-                payee: null,
-                category: null,
-                memo: '',
-                inflow: null,
-                outflow: null
-            })
+            resetNewExpense()
         } catch (error) {
             console.error('Error adding expense:', error)
             toast.error('An unexpected error occurred')
