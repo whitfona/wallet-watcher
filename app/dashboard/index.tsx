@@ -19,6 +19,7 @@ import {BalanceSummary} from '@/components/BalanceSummary'
 import {formatCurrency, formatDate} from '@/utils/helpers'
 import {supabase} from '@/utils/supabase'
 import {useToast} from '@/components/Toast'
+import {useConfirmDuplicate} from '@/hooks/useConfirmDuplicate'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
@@ -162,6 +163,7 @@ export function Index() {
     const fileUploadRef = useRef<HTMLInputElement>(null)
     const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
     const [year, setYear] = useState<number>(new Date().getFullYear())
+    const [isDuplicateExpense, setIsDuplicateExpense] = useState(false)
     const [showAddForm, setShowAddForm] = useState(false)
     const [showDeleteButton, setShowDeleteButton] = useState(false)
     const [newExpense, setNewExpense] = useState<ExpenseFormData>({
@@ -238,6 +240,32 @@ export function Index() {
         }
     }
 
+    const checkForDuplicateExpense = (expense: ExpenseFormData) => {
+        return rowData.find((existingExpense) => {
+            // Convert both dates to local time and compare just the date parts
+            const existingDate = new Date(existingExpense.date)
+            const newDate = new Date(expense.date)
+
+            // Adjust for timezone
+            existingDate.setMinutes(existingDate.getMinutes() + existingDate.getTimezoneOffset())
+            newDate.setMinutes(newDate.getMinutes() + newDate.getTimezoneOffset())
+
+            const sameDate =
+                existingDate.getFullYear() === newDate.getFullYear() &&
+                existingDate.getMonth() === newDate.getMonth() &&
+                existingDate.getDate() === newDate.getDate()
+
+            // Find the account name that matches the account ID
+            const accountName = accounts.find(acc => acc.value === expense.account)?.label
+            const sameAccount = existingExpense.account === accountName
+            const sameAmount =
+                (expense.outflow && existingExpense.outflow === expense.outflow) ||
+                (expense.inflow && existingExpense.inflow === expense.inflow)
+
+            return sameDate && sameAccount && sameAmount
+        })
+    }
+
     const handleAddExpense = async (e: FormEvent) => {
         e.preventDefault()
         if (missingRequiredFields(newExpense)) {
@@ -245,13 +273,69 @@ export function Index() {
             return
         }
 
+        // Check for duplicate expense
+        const matchingExpense = checkForDuplicateExpense(newExpense)
+        if (matchingExpense) {
+            setShowAddForm(false)
+            setIsDuplicateExpense(true)
+            return
+        }
+
+        await addExpenseToDatabase(newExpense)
+    }
+
+    const {Dialog: DuplicateDialog, openDialog} = useConfirmDuplicate({
+        onAccept: async () => {
+            await addExpenseToDatabase(newExpense)
+            setIsDuplicateExpense(false)
+        },
+        onReject: () => {
+            setNewExpense({
+                id: null,
+                date: '',
+                account: null,
+                payee: null,
+                category: null,
+                memo: '',
+                inflow: null,
+                outflow: null
+            })
+            setIsDuplicateExpense(false)
+        },
+        duplicateExpense: newExpense,
+        matchingExpense: isDuplicateExpense ? (() => {
+            const matching = checkForDuplicateExpense(newExpense)
+            if (!matching) return undefined
+            return {
+                id: matching.id,
+                date: matching.date,
+                account: accounts.find(acc => acc.label === matching.account)?.value ?? null,
+                payee: payees.find(p => p.label === matching.payee)?.value ?? null,
+                category: categories.find(c => c.label === matching.category)?.value ?? null,
+                memo: matching.memo,
+                inflow: matching.inflow,
+                outflow: matching.outflow
+            }
+        })() : undefined,
+        getAccountLabel: (id) => accounts.find(acc => acc.value === id)?.label,
+        getPayeeLabel: (id) => payees.find(p => p.value === id)?.label,
+        getCategoryLabel: (id) => categories.find(c => c.value === id)?.label
+    })
+
+    useEffect(() => {
+        if (isDuplicateExpense) {
+            openDialog()
+        }
+    }, [isDuplicateExpense, openDialog])
+
+    const addExpenseToDatabase = async (expense: ExpenseFormData) => {
         try {
             // If payee is a string (new payee), create it first
-            let payeeId = newExpense.payee
-            if (typeof newExpense.payee === 'string') {
+            let payeeId = expense.payee
+            if (typeof expense.payee === 'string') {
                 const {data: newPayee, error: payeeError} = await supabase
                     .from('payees')
-                    .insert([{name: newExpense.payee}])
+                    .insert([{name: expense.payee}])
                     .select()
                     .single()
 
@@ -266,13 +350,13 @@ export function Index() {
             const {error} = await supabase
                 .from('expenses')
                 .insert([{
-                    date: newExpense.date,
-                    account_id: newExpense.account,
+                    date: expense.date,
+                    account_id: expense.account,
                     payee_id: payeeId,
-                    category_id: newExpense.category,
-                    memo: newExpense.memo,
-                    outflow: newExpense.outflow,
-                    inflow: newExpense.inflow
+                    category_id: expense.category,
+                    memo: expense.memo,
+                    outflow: expense.outflow,
+                    inflow: expense.inflow
                 }])
 
             if (error) {
@@ -502,6 +586,7 @@ export function Index() {
                     handleSubmit={handleAddExpense}
                     handleCancel={cancelAddExpense}
                 />}
+            <DuplicateDialog/>
             <div>
                 <div>
                     <AgGridReact
