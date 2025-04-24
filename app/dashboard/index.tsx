@@ -19,13 +19,14 @@ import {BalanceSummary} from '@/components/BalanceSummary'
 import {formatCurrency, formatDate} from '@/utils/helpers'
 import {supabase} from '@/utils/supabase'
 import {useToast} from '@/components/Toast'
-import {useConfirmDuplicate} from '@/hooks/useConfirmDuplicate'
+import {useDuplicateExpenseDialog} from '@/components/DuplicateExpenseDialog'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
     const theme = themeBalham.withPart(colorSchemeLightCold)
     const agGridRef = useRef<AgGridReact>(null)
     const toast = useToast()
+    const {showDuplicateDialog} = useDuplicateExpenseDialog()
 
     const [accounts, setAccounts] = useState<SelectInterface[]>([])
     const [categories, setCategories] = useState<SelectInterface[]>([])
@@ -277,56 +278,39 @@ export function Index() {
         const matchingExpense = checkForDuplicateExpense(newExpense)
         if (matchingExpense) {
             setShowAddForm(false)
-            setIsDuplicateExpense(true)
+            showDuplicateDialog(
+                newExpense,
+                {
+                    id: matchingExpense.id,
+                    date: matchingExpense.date,
+                    account: accounts.find(acc => acc.label === matchingExpense.account)?.value ?? null,
+                    payee: payees.find(p => p.label === matchingExpense.payee)?.value ?? null,
+                    category: categories.find(c => c.label === matchingExpense.category)?.value ?? null,
+                    memo: matchingExpense.memo,
+                    inflow: matchingExpense.inflow,
+                    outflow: matchingExpense.outflow
+                },
+                async () => {
+                    await addExpenseToDatabase(newExpense)
+                },
+                () => {
+                    setNewExpense({
+                        id: null,
+                        date: '',
+                        account: null,
+                        payee: null,
+                        category: null,
+                        memo: '',
+                        inflow: null,
+                        outflow: null
+                    })
+                }
+            )
             return
         }
 
         await addExpenseToDatabase(newExpense)
     }
-
-    const {Dialog: DuplicateDialog, openDialog} = useConfirmDuplicate({
-        onAccept: async () => {
-            await addExpenseToDatabase(newExpense)
-            setIsDuplicateExpense(false)
-        },
-        onReject: () => {
-            setNewExpense({
-                id: null,
-                date: '',
-                account: null,
-                payee: null,
-                category: null,
-                memo: '',
-                inflow: null,
-                outflow: null
-            })
-            setIsDuplicateExpense(false)
-        },
-        duplicateExpense: newExpense,
-        matchingExpense: isDuplicateExpense ? (() => {
-            const matching = checkForDuplicateExpense(newExpense)
-            if (!matching) return undefined
-            return {
-                id: matching.id,
-                date: matching.date,
-                account: accounts.find(acc => acc.label === matching.account)?.value ?? null,
-                payee: payees.find(p => p.label === matching.payee)?.value ?? null,
-                category: categories.find(c => c.label === matching.category)?.value ?? null,
-                memo: matching.memo,
-                inflow: matching.inflow,
-                outflow: matching.outflow
-            }
-        })() : undefined,
-        getAccountLabel: (id) => accounts.find(acc => acc.value === id)?.label,
-        getPayeeLabel: (id) => payees.find(p => p.value === id)?.label,
-        getCategoryLabel: (id) => categories.find(c => c.value === id)?.label
-    })
-
-    useEffect(() => {
-        if (isDuplicateExpense) {
-            openDialog()
-        }
-    }, [isDuplicateExpense, openDialog])
 
     const addExpenseToDatabase = async (expense: ExpenseFormData) => {
         try {
@@ -586,7 +570,6 @@ export function Index() {
                     handleSubmit={handleAddExpense}
                     handleCancel={cancelAddExpense}
                 />}
-            <DuplicateDialog/>
             <div>
                 <div>
                     <AgGridReact
