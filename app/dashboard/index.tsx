@@ -16,7 +16,7 @@ import {DialogCalendar} from '@/components/DialogCalendar'
 import {read, utils} from 'xlsx'
 import {AddExpenseForm} from '@/dashboard/components/AddExpenseForm'
 import {BalanceSummary} from '@/components/BalanceSummary'
-import {formatCurrency, formatDate} from '@/utils/helpers'
+import {formatCurrency, formatDate, formatDateForTimestamptz} from '@/utils/helpers'
 import {supabase} from '@/utils/supabase'
 import {useToast} from '@/components/Toast'
 import {useDuplicateExpenseDialog} from '@/components/DuplicateExpenseDialog'
@@ -244,30 +244,35 @@ export function Index() {
         }
     }
 
-    const checkForDuplicateExpense = (expense: ExpenseFormData) => {
-        return rowData.find((existingExpense) => {
-            // Convert both dates to local time and compare just the date parts
-            const existingDate = new Date(existingExpense.date)
-            const newDate = new Date(expense.date)
+    const checkForDuplicateExpense = async (expense: ExpenseFormData) => {
+        const {startTimestamp, endTimestamp} = formatDateForTimestamptz(expense.date)
 
-            // Adjust for timezone
-            existingDate.setMinutes(existingDate.getMinutes() + existingDate.getTimezoneOffset())
-            newDate.setMinutes(newDate.getMinutes() + newDate.getTimezoneOffset())
+        // Query database for potential duplicates
+        const {data: existingExpenses, error} = await supabase
+            .from('expenses')
+            .select('*')
+            .filter('date', 'gte', startTimestamp)
+            .filter('date', 'lt', endTimestamp)
+            .eq('account_id', expense.account)
+            .or(`outflow.eq.${expense.outflow || 0},inflow.eq.${expense.inflow || 0}`)
 
-            const sameDate =
-                existingDate.getFullYear() === newDate.getFullYear() &&
-                existingDate.getMonth() === newDate.getMonth() &&
-                existingDate.getDate() === newDate.getDate()
+        if (error) {
+            toast.error('Error checking for duplicate expense')
+            return
+        }
 
-            // Find the account name that matches the account ID
-            const accountName = accounts.find(acc => acc.value === expense.account)?.label
-            const sameAccount = existingExpense.account === accountName
-            const sameAmount =
-                (expense.outflow && existingExpense.outflow === expense.outflow) ||
-                (expense.inflow && existingExpense.inflow === expense.inflow)
+        if (existingExpenses && existingExpenses.length > 0) {
+            // Get the full expense details for the duplicate dialog
+            const {data: expenseView} = await supabase
+                .from('expenses_view')
+                .select('*')
+                .eq('id', existingExpenses[0].id)
+                .single()
 
-            return sameDate && sameAccount && sameAmount
-        })
+            return expenseView
+        }
+
+        return
     }
 
     const handleAddExpense = async (e: FormEvent) => {
@@ -277,8 +282,7 @@ export function Index() {
             return
         }
 
-        // Check for duplicate expense
-        const matchingExpense = checkForDuplicateExpense(newExpense)
+        const matchingExpense = await checkForDuplicateExpense(newExpense)
         if (matchingExpense) {
             setShowAddForm(false)
             showDuplicateDialog(
