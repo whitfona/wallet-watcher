@@ -67,7 +67,7 @@ export const AddExpenseForm = (
 
     return (
         <form className="flex flex-row flex-wrap gap-2 mb-2 px-4" onSubmit={handleSubmit}>
-            <input className="input-styles"
+            <input className="input-styles text-xs"
                    type="date"
                    value={newExpense.date}
                    name="date"
@@ -118,21 +118,21 @@ export const AddExpenseForm = (
                     dropdownIndicator: base => ({...base, color: '#d1d5dc'}),
                 }}
             />
-            <input className="input-styles"
+            <input className="input-styles text-xs"
                    placeholder="Enter memo..."
                    type="text"
                    name="memo"
                    value={newExpense.memo}
                    onChange={handleChange}
             />
-            <input className="input-styles"
+            <input className="input-styles text-xs"
                    placeholder="Enter outflow..."
                    type="number"
                    name="outflow"
                    value={newExpense.outflow ?? ''}
                    onChange={handleChange}
             />
-            <input className="input-styles"
+            <input className="input-styles text-xs"
                    placeholder="Enter inflow..."
                    type="number"
                    name="inflow"

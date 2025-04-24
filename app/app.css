@@ -26,5 +26,5 @@ body {
 }
 
 .input-styles {
-    @apply border border-gray-300 placeholder:text-gray-400 p-2 text-xs rounded-sm;
+    @apply border border-gray-300 placeholder:text-gray-400 p-2 rounded-sm;
 }
