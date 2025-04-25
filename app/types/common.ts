@@ -37,6 +37,23 @@ export interface ExpenseFormData {
     inflow: number | null
 }
 
+export interface ImportedExpense {
+    date: string;
+    account: string | null;
+    payee: string | null;
+    category: string | null;
+    memo: string;
+    outflow: number | null;
+    inflow: number | null;
+}
+
+export interface ImportCounters {
+    successCount: number;
+    duplicateCount: number;
+    skippedCount: number;
+    errorCount: number;
+}
+
 export interface SelectInterface {
     value: number
     label: string
