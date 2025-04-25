@@ -244,7 +244,12 @@ export function Index() {
         }
     }
 
-    const checkForDuplicateExpense = async (expense: ExpenseFormData) => {
+    const checkForDuplicateExpense = async (expense: {
+        date: string,
+        account: string | number | null,
+        outflow: number | null,
+        inflow: number | null
+    }) => {
         const {startTimestamp, endTimestamp} = formatDateForTimestamptz(expense.date)
 
         // Query database for potential duplicates
@@ -305,23 +310,58 @@ export function Index() {
         await addExpenseToDatabase(newExpense)
     }
 
+    const createPayeeIfNeeded = async (payeeName: string | number | null): Promise<number | null> => {
+        // If payee is already an ID (number), return it
+        if (typeof payeeName !== 'string' || !payeeName) {
+            return payeeName as number | null
+        }
+
+        // Check if payee already exists
+        const existingPayee = payees.find(payee => payee.label.toLowerCase() === payeeName.toLowerCase())
+        if (existingPayee) {
+            return existingPayee.value as number
+        }
+
+        // Create new payee
+        const {data: newPayee, error: payeeError} = await supabase
+            .from('payees')
+            .insert([{name: payeeName}])
+            .select()
+            .single()
+
+        if (payeeError) {
+            toast.error('Failed to create new payee')
+            return null
+        }
+
+        return newPayee.id
+    }
+
+    const refreshPayees = async () => {
+        const payeesResponse = await supabase
+            .from('payees_view')
+            .select('*')
+            .order('name', {ascending: true})
+
+        if (payeesResponse.error) {
+            toast.error('Failed to refresh payees')
+            return false
+        }
+
+        const mappedPayees: SelectInterface[] = payeesResponse.data.map((payee) => ({
+            value: payee.id,
+            label: payee.name,
+        }))
+        setPayees(mappedPayees)
+        return true
+    }
+
     const addExpenseToDatabase = async (expense: ExpenseFormData) => {
         try {
             // If payee is a string (new payee), create it first
-            let payeeId = expense.payee
-            if (typeof expense.payee === 'string') {
-                const {data: newPayee, error: payeeError} = await supabase
-                    .from('payees')
-                    .insert([{name: expense.payee}])
-                    .select()
-                    .single()
-
-                if (payeeError) {
-                    toast.error('Failed to create new payee')
-                    return
-                }
-
-                payeeId = newPayee.id
+            const payeeId = await createPayeeIfNeeded(expense.payee)
+            if (payeeId === null && expense.payee !== null) {
+                return
             }
 
             const {error} = await supabase
@@ -341,22 +381,7 @@ export function Index() {
                 return
             }
 
-            // Refresh all data to get the new payee and expense
-            const payeesResponse = await supabase
-                .from('payees_view')
-                .select('*')
-                .order('name', {ascending: true})
-
-            if (payeesResponse.error) {
-                toast.error('Failed to refresh payees')
-                return
-            }
-
-            const mappedPayees: SelectInterface[] = payeesResponse.data.map((payee) => ({
-                value: payee.id,
-                label: payee.name,
-            }))
-            setPayees(mappedPayees)
+            await refreshPayees()
             await fetchExpenses(month, year)
 
             toast.success('Expense added successfully')
@@ -427,6 +452,47 @@ export function Index() {
         inflow: number | null;
     }
 
+    const formatImportedExpenseForDialog = (
+        item: SheetDataInterface,
+        formattedDate: string,
+        account: SelectInterface
+    ): ExpenseRecord => {
+        return {
+            id: -1, // Temporary id for dialog
+            date: formattedDate,
+            account: account.label,
+            payee: item.payee || '',
+            category: item.category || '',
+            memo: item.memo || '',
+            outflow: item.outflow,
+            inflow: item.inflow
+        }
+    }
+
+    const insertExpense = async (
+        formattedDate: string,
+        accountId: number,
+        payeeId: number | null,
+        categoryId: number | null,
+        memo: string,
+        outflow: number | null,
+        inflow: number | null
+    ): Promise<boolean> => {
+        const {error} = await supabase
+            .from('expenses')
+            .insert([{
+                date: formattedDate,
+                account_id: accountId,
+                payee_id: payeeId,
+                category_id: categoryId,
+                memo: memo || '',
+                outflow: outflow || null,
+                inflow: inflow || null
+            }])
+
+        return !error
+    }
+
     const onFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (!e.target || !e.target.files) {
             return
@@ -445,46 +511,155 @@ export function Index() {
                 const header = ['date', 'account', 'payee', 'category', 'memo', 'outflow', 'inflow']
                 const sheetData: SheetDataInterface[] = utils.sheet_to_json(sheet, {header: header})
 
-                const expensesToInsert = sheetData.slice(1).map((item) => {
-                    const account = accounts.find((account) => account.label === item.account)
-                    const payee = payees.find((payee) => payee.label === item.payee)
-                    const category = categories.find((category) => item.category && category.label.includes(item.category))
-
-                    return {
-                        date: new Date(item.date).toISOString(),
-                        account_id: account?.value || null,
-                        payee_id: payee?.value || null,
-                        category_id: category?.value || null,
-                        memo: item.memo || '',
-                        outflow: item.outflow || null,
-                        inflow: item.inflow || null
-                    }
+                // Process one by one with a queue mechanism
+                const validExpenses = sheetData.slice(1).filter(item => {
+                    const account = accounts.find((account) => account.label.toLowerCase() === item.account?.toLowerCase())
+                    return !!account?.value
                 })
 
-                const {error} = await supabase
-                    .from('expenses')
-                    .insert(expensesToInsert)
-
-                if (error) {
-                    toast.error('Failed to import expenses')
+                if (validExpenses.length === 0) {
+                    toast.error('No valid expenses found in the file')
                     return
                 }
 
-                const {data: expensesData, error: fetchError} = await supabase
-                    .from('expenses_view')
-                    .select('*')
-                    .order('date', {ascending: false})
+                toast.info(`Processing ${validExpenses.length} expenses...`)
 
-                if (fetchError) {
-                    toast.error('Failed to refresh expenses')
-                    return
+                let successCount = 0
+                let duplicateCount = 0
+                let skippedCount = 0
+                let errorCount = 0
+
+                // Process the first expense
+                await processNextExpense(validExpenses, 0)
+
+                // Function to process expenses one by one
+                async function processNextExpense(expenses: SheetDataInterface[], index: number) {
+                    // All expenses processed
+                    if (index >= expenses.length) {
+                        await refreshPayees()
+                        await fetchExpenses(month, year)
+
+                        // Show final status
+                        if (successCount > 0) {
+                            let message = `${successCount} expenses imported successfully.`
+                            if (skippedCount > 0 || errorCount > 0) {
+                                message += ` ${skippedCount} skipped.`
+                                if (errorCount > 0) {
+                                    message += ` ${errorCount} failed due to errors.`
+                                }
+                            }
+                            toast.success(message)
+                        } else if (duplicateCount > 0 && successCount === 0) {
+                            let message = `No new expenses imported. All were duplicates or skipped.`
+                            if (errorCount > 0) {
+                                message += ` ${errorCount} failed due to errors.`
+                            }
+                            toast.info(message)
+                        } else {
+                            let message = 'Failed to import expenses'
+                            if (errorCount > 0) {
+                                message += ` (${errorCount} errors encountered)`
+                            }
+                            toast.error(message)
+                        }
+
+                        if (fileUploadRef.current) {
+                            fileUploadRef.current.value = ''
+                        }
+
+                        return
+                    }
+
+                    const item = expenses[index]
+
+                    try {
+                        const account = accounts.find((account) => account.label.toLowerCase() === item.account?.toLowerCase())
+                        if (!account?.value) {
+                            skippedCount++
+                            await processNextExpense(expenses, index + 1)
+                            return
+                        }
+
+                        // Format data for duplicate checking
+                        const formattedDate = new Date(item.date).toISOString()
+                        const expenseToCheck = {
+                            date: formattedDate,
+                            account: account.value,
+                            outflow: item.outflow,
+                            inflow: item.inflow
+                        }
+
+                        const duplicate = await checkForDuplicateExpense(expenseToCheck)
+
+                        const category = categories.find((category) => item.category && category.label.includes(item.category))
+
+                        if (duplicate) {
+                            duplicateCount++
+
+                            const newExpenseFormatted = formatImportedExpenseForDialog(item, formattedDate, account)
+
+                            showDuplicateDialog(
+                                newExpenseFormatted,
+                                duplicate,
+                                async () => {
+                                    const payeeId = await createPayeeIfNeeded(item.payee)
+
+                                    const success = await insertExpense(
+                                        formattedDate,
+                                        account.value as number,
+                                        payeeId,
+                                        category?.value || null,
+                                        item.memo || '',
+                                        item.outflow,
+                                        item.inflow
+                                    )
+
+                                    if (success) {
+                                        successCount++
+                                        duplicateCount--  // This is no longer a duplicate since we added it
+                                    } else {
+                                        errorCount++
+                                    }
+
+                                    await processNextExpense(expenses, index + 1)
+                                },
+                                () => {
+                                    processNextExpense(expenses, index + 1)
+                                }
+                            )
+                        } else {
+                            const payeeId = await createPayeeIfNeeded(item.payee)
+
+                            const success = await insertExpense(
+                                formattedDate,
+                                account.value as number,
+                                payeeId,
+                                category?.value || null,
+                                item.memo || '',
+                                item.outflow,
+                                item.inflow
+                            )
+
+                            if (success) {
+                                successCount++
+                            } else {
+                                errorCount++
+                            }
+
+                            await processNextExpense(expenses, index + 1)
+                        }
+                    } catch (error) {
+                        console.error('Error processing expense:', error)
+                        errorCount++
+                        await processNextExpense(expenses, index + 1)
+                    }
                 }
-
-                setRowData(expensesData)
-                toast.success('Expenses imported successfully')
             } catch (error) {
                 console.error('Error importing expenses:', error)
                 toast.error('Failed to import expenses')
+                if (fileUploadRef.current) {
+                    fileUploadRef.current.value = ''
+                }
             }
         }
 
