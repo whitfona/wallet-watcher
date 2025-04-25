@@ -3,7 +3,9 @@ import {
     ModuleRegistry,
     themeBalham,
     colorSchemeLightCold,
-    type CellValueChangedEvent
+    type CellValueChangedEvent,
+    type ValueFormatterParams,
+    type RowSelectedEvent,
 } from 'ag-grid-community'
 import {AgGridReact, type AgGridReactProps} from 'ag-grid-react'
 import {type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState} from 'react'
@@ -24,7 +26,7 @@ import {useDuplicateExpenseDialog} from '@/components/DuplicateExpenseDialog'
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
     const theme = themeBalham.withPart(colorSchemeLightCold)
-    const agGridRef = useRef<AgGridReact>(null)
+    const agGridRef = useRef<AgGridReact<ExpenseRecord>>(null)
     const toast = useToast()
     const {showDuplicateDialog} = useDuplicateExpenseDialog()
 
@@ -41,7 +43,7 @@ export function Index() {
             {
                 field: 'date',
                 cellDataType: 'dateString',
-                valueFormatter: (params: any) => formatDate(params.value)
+                valueFormatter: (params: ValueFormatterParams) => formatDate(params.value)
             },
             {
                 field: 'account',
@@ -68,12 +70,12 @@ export function Index() {
             {
                 field: 'outflow',
                 cellDataType: 'number',
-                valueFormatter: (params: any) => formatCurrency(params.value)
+                valueFormatter: (params: ValueFormatterParams) => formatCurrency(params.value)
             },
             {
                 field: 'inflow',
                 cellDataType: 'number',
-                valueFormatter: (params: any) => formatCurrency(params.value)
+                valueFormatter: (params: ValueFormatterParams) => formatCurrency(params.value)
             },
         ])
     }, [accounts, categories, payees])
@@ -131,7 +133,7 @@ export function Index() {
         ;(() => fetchData())()
     }, [])
 
-    const fetchExpenses = async (selectedMonth: number, selectedYear: number) => {
+    const fetchExpenses = async (selectedMonth: number, selectedYear: number): Promise<void> => {
         try {
             const endMonth = selectedMonth === 12 ? 1 : selectedMonth + 1
             const endYear = selectedMonth === 12 ? selectedYear + 1 : selectedYear
@@ -249,7 +251,7 @@ export function Index() {
         account: string | number | null,
         outflow: number | null,
         inflow: number | null
-    }) => {
+    }): Promise<ExpenseRecord | undefined> => {
         const {startTimestamp, endTimestamp} = formatDateForTimestamptz(expense.date)
 
         // Query database for potential duplicates
@@ -421,8 +423,8 @@ export function Index() {
         }
     }
 
-    const onRowSelected = () => {
-        const selectedRows = agGridRef.current?.api?.getSelectedRows()
+    const onRowSelected = (event: RowSelectedEvent) => {
+        const selectedRows = event.api.getSelectedRows() as ExpenseRecord[]
 
         setShowDeleteButton(selectedRows ? selectedRows.length > 0 : false)
     }
@@ -442,7 +444,7 @@ export function Index() {
         fileUploadRef.current?.click()
     }
 
-    interface SheetDataInterface {
+    interface ImportedExpense {
         date: string;
         account: string | null;
         payee: string | null;
@@ -453,7 +455,7 @@ export function Index() {
     }
 
     const formatImportedExpenseForDialog = (
-        item: SheetDataInterface,
+        item: ImportedExpense,
         formattedDate: string,
         account: SelectInterface
     ): ExpenseRecord => {
@@ -501,7 +503,7 @@ export function Index() {
         const reader = new FileReader()
 
         reader.onload = async (event: ProgressEvent<FileReader>) => {
-            if (!event.target) {
+            if (!event.target?.result) {
                 return
             }
             try {
@@ -509,7 +511,7 @@ export function Index() {
                 const sheetName = workbook.SheetNames[0]
                 const sheet = workbook.Sheets[sheetName]
                 const header = ['date', 'account', 'payee', 'category', 'memo', 'outflow', 'inflow']
-                const sheetData: SheetDataInterface[] = utils.sheet_to_json(sheet, {header: header})
+                const sheetData: ImportedExpense[] = utils.sheet_to_json(sheet, {header: header})
 
                 // Process one by one with a queue mechanism
                 const validExpenses = sheetData.slice(1).filter(item => {
@@ -533,7 +535,7 @@ export function Index() {
                 await processNextExpense(validExpenses, 0)
 
                 // Function to process expenses one by one
-                async function processNextExpense(expenses: SheetDataInterface[], index: number) {
+                async function processNextExpense(expenses: ImportedExpense[], index: number): Promise<void> {
                     // All expenses processed
                     if (index >= expenses.length) {
                         await refreshPayees()
@@ -649,7 +651,7 @@ export function Index() {
                             await processNextExpense(expenses, index + 1)
                         }
                     } catch (error) {
-                        console.error('Error processing expense:', error)
+                        console.error('Error processing expense:', error instanceof Error ? error.message : error)
                         errorCount++
                         await processNextExpense(expenses, index + 1)
                     }
