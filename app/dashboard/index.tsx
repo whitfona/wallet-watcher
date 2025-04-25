@@ -495,6 +495,140 @@ export function Index() {
         return !error
     }
 
+    const displayImportStatus = (
+        successCount: number,
+        duplicateCount: number,
+        skippedCount: number,
+        errorCount: number
+    ): void => {
+        if (successCount > 0) {
+            let message = `${successCount} expenses imported successfully.`
+            if (skippedCount > 0 || errorCount > 0) {
+                message += ` ${skippedCount} skipped.`
+                if (errorCount > 0) {
+                    message += ` ${errorCount} failed due to errors.`
+                }
+            }
+            toast.success(message)
+        } else if (duplicateCount > 0 && successCount === 0) {
+            let message = `No new expenses imported. All were duplicates or skipped.`
+            if (errorCount > 0) {
+                message += ` ${errorCount} failed due to errors.`
+            }
+            toast.info(message)
+        } else {
+            let message = 'Failed to import expenses'
+            if (errorCount > 0) {
+                message += ` (${errorCount} errors encountered)`
+            }
+            toast.error(message)
+        }
+    }
+
+    const processExpense = async (
+        item: ImportedExpense,
+        counters: {
+            successCount: number,
+            duplicateCount: number,
+            skippedCount: number,
+            errorCount: number
+        },
+        processNextFunction: (index: number) => Promise<void>,
+        currentIndex: number
+    ): Promise<void> => {
+        try {
+            const account = accounts.find((acc) => acc.label.toLowerCase() === item.account?.toLowerCase())
+            if (!account?.value) {
+                counters.skippedCount++
+                await processNextFunction(currentIndex + 1)
+                return
+            }
+
+            // Format data for duplicate checking
+            const formattedDate = new Date(item.date).toISOString()
+            const expenseToCheck = {
+                date: formattedDate,
+                account: account.value,
+                outflow: item.outflow,
+                inflow: item.inflow
+            }
+
+            const duplicate = await checkForDuplicateExpense(expenseToCheck)
+            const category = categories.find((cat) => item.category && cat.label.includes(item.category))
+
+            if (duplicate) {
+                counters.duplicateCount++
+                const newExpenseFormatted = formatImportedExpenseForDialog(item, formattedDate, account)
+
+                showDuplicateDialog(
+                    newExpenseFormatted,
+                    duplicate,
+                    async () => {
+                        const payeeId = await createPayeeIfNeeded(item.payee)
+                        const success = await insertExpense(
+                            formattedDate,
+                            account.value as number,
+                            payeeId,
+                            category?.value || null,
+                            item.memo || '',
+                            item.outflow,
+                            item.inflow
+                        )
+
+                        if (success) {
+                            counters.successCount++
+                            counters.duplicateCount--  // This is no longer a duplicate since we added it
+                        } else {
+                            counters.errorCount++
+                        }
+
+                        await processNextFunction(currentIndex + 1)
+                    },
+                    () => {
+                        processNextFunction(currentIndex + 1)
+                    }
+                )
+            } else {
+                const payeeId = await createPayeeIfNeeded(item.payee)
+                const success = await insertExpense(
+                    formattedDate,
+                    account.value as number,
+                    payeeId,
+                    category?.value || null,
+                    item.memo || '',
+                    item.outflow,
+                    item.inflow
+                )
+
+                if (success) {
+                    counters.successCount++
+                } else {
+                    counters.errorCount++
+                }
+
+                await processNextFunction(currentIndex + 1)
+            }
+        } catch (error) {
+            console.error('Error processing expense:', error instanceof Error ? error.message : error)
+            counters.errorCount++
+            await processNextFunction(currentIndex + 1)
+        }
+    }
+
+    const parseExcelFile = async (fileContent: string | ArrayBuffer): Promise<ImportedExpense[]> => {
+        const workbook = read(fileContent, {type: 'binary'})
+        const sheetName = workbook.SheetNames[0]
+        const sheet = workbook.Sheets[sheetName]
+        const header = ['date', 'account', 'payee', 'category', 'memo', 'outflow', 'inflow']
+        const sheetData: ImportedExpense[] = utils.sheet_to_json(sheet, {header: header})
+
+        // Filter valid expenses (accounts must exist)
+        return sheetData.slice(1).filter(item => {
+            const account = accounts.find((acc) => acc.label.toLowerCase() === item.account?.toLowerCase())
+            return !!account?.value
+        })
+    }
+
     const onFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (!e.target || !e.target.files) {
             return
@@ -506,18 +640,9 @@ export function Index() {
             if (!event.target?.result) {
                 return
             }
-            try {
-                const workbook = read(event.target.result, {type: 'binary'})
-                const sheetName = workbook.SheetNames[0]
-                const sheet = workbook.Sheets[sheetName]
-                const header = ['date', 'account', 'payee', 'category', 'memo', 'outflow', 'inflow']
-                const sheetData: ImportedExpense[] = utils.sheet_to_json(sheet, {header: header})
 
-                // Process one by one with a queue mechanism
-                const validExpenses = sheetData.slice(1).filter(item => {
-                    const account = accounts.find((account) => account.label.toLowerCase() === item.account?.toLowerCase())
-                    return !!account?.value
-                })
+            try {
+                const validExpenses = await parseExcelFile(event.target.result)
 
                 if (validExpenses.length === 0) {
                     toast.error('No valid expenses found in the file')
@@ -526,136 +651,44 @@ export function Index() {
 
                 toast.info(`Processing ${validExpenses.length} expenses...`)
 
-                let successCount = 0
-                let duplicateCount = 0
-                let skippedCount = 0
-                let errorCount = 0
+                // Counters for tracking import progress
+                const counters = {
+                    successCount: 0,
+                    duplicateCount: 0,
+                    skippedCount: 0,
+                    errorCount: 0
+                }
 
-                // Process the first expense
-                await processNextExpense(validExpenses, 0)
-
-                // Function to process expenses one by one
-                async function processNextExpense(expenses: ImportedExpense[], index: number): Promise<void> {
+                // Define the recursive processing function
+                const processNextExpense = async (index: number): Promise<void> => {
                     // All expenses processed
-                    if (index >= expenses.length) {
+                    if (index >= validExpenses.length) {
                         await refreshPayees()
                         await fetchExpenses(month, year)
-
-                        // Show final status
-                        if (successCount > 0) {
-                            let message = `${successCount} expenses imported successfully.`
-                            if (skippedCount > 0 || errorCount > 0) {
-                                message += ` ${skippedCount} skipped.`
-                                if (errorCount > 0) {
-                                    message += ` ${errorCount} failed due to errors.`
-                                }
-                            }
-                            toast.success(message)
-                        } else if (duplicateCount > 0 && successCount === 0) {
-                            let message = `No new expenses imported. All were duplicates or skipped.`
-                            if (errorCount > 0) {
-                                message += ` ${errorCount} failed due to errors.`
-                            }
-                            toast.info(message)
-                        } else {
-                            let message = 'Failed to import expenses'
-                            if (errorCount > 0) {
-                                message += ` (${errorCount} errors encountered)`
-                            }
-                            toast.error(message)
-                        }
-
+                        displayImportStatus(
+                            counters.successCount,
+                            counters.duplicateCount,
+                            counters.skippedCount,
+                            counters.errorCount
+                        )
                         if (fileUploadRef.current) {
                             fileUploadRef.current.value = ''
                         }
-
                         return
                     }
 
-                    const item = expenses[index]
-
-                    try {
-                        const account = accounts.find((account) => account.label.toLowerCase() === item.account?.toLowerCase())
-                        if (!account?.value) {
-                            skippedCount++
-                            await processNextExpense(expenses, index + 1)
-                            return
-                        }
-
-                        // Format data for duplicate checking
-                        const formattedDate = new Date(item.date).toISOString()
-                        const expenseToCheck = {
-                            date: formattedDate,
-                            account: account.value,
-                            outflow: item.outflow,
-                            inflow: item.inflow
-                        }
-
-                        const duplicate = await checkForDuplicateExpense(expenseToCheck)
-
-                        const category = categories.find((category) => item.category && category.label.includes(item.category))
-
-                        if (duplicate) {
-                            duplicateCount++
-
-                            const newExpenseFormatted = formatImportedExpenseForDialog(item, formattedDate, account)
-
-                            showDuplicateDialog(
-                                newExpenseFormatted,
-                                duplicate,
-                                async () => {
-                                    const payeeId = await createPayeeIfNeeded(item.payee)
-
-                                    const success = await insertExpense(
-                                        formattedDate,
-                                        account.value as number,
-                                        payeeId,
-                                        category?.value || null,
-                                        item.memo || '',
-                                        item.outflow,
-                                        item.inflow
-                                    )
-
-                                    if (success) {
-                                        successCount++
-                                        duplicateCount--  // This is no longer a duplicate since we added it
-                                    } else {
-                                        errorCount++
-                                    }
-
-                                    await processNextExpense(expenses, index + 1)
-                                },
-                                () => {
-                                    processNextExpense(expenses, index + 1)
-                                }
-                            )
-                        } else {
-                            const payeeId = await createPayeeIfNeeded(item.payee)
-
-                            const success = await insertExpense(
-                                formattedDate,
-                                account.value as number,
-                                payeeId,
-                                category?.value || null,
-                                item.memo || '',
-                                item.outflow,
-                                item.inflow
-                            )
-
-                            if (success) {
-                                successCount++
-                            } else {
-                                errorCount++
-                            }
-
-                            await processNextExpense(expenses, index + 1)
-                        }
-                    } catch (error) {
-                        console.error('Error processing expense:', error instanceof Error ? error.message : error)
-                        errorCount++
-                        await processNextExpense(expenses, index + 1)
-                    }
+                    // Process the current expense
+                    await processExpense(
+                        validExpenses[index],
+                        counters,
+                        processNextExpense,
+                        index
+                    )
                 }
+
+                // Start processing the first expense
+                await processNextExpense(0)
+
             } catch (error) {
                 console.error('Error importing expenses:', error)
                 toast.error('Failed to import expenses')
