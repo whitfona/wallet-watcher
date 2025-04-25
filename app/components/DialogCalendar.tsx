@@ -96,13 +96,15 @@ export const DialogCalendar = ({initialMonth, initialYear, onDateChange, classNa
                 </div>
 
                 <div className="grid grid-cols-4 gap-2 mt-4">
-                    {Object.entries(MONTHS).map(([key, month]) => (
+                    {Object.entries(MONTHS).map(([key, monthName]) => (
                         <p
                             key={key}
-                            className="cursor-pointer rounded hover:bg-gray-200 py-2 px-4"
+                            className={`cursor-pointer rounded py-2 px-4 ${
+                                parseInt(key) === month ? 'bg-gray-200' : 'hover:bg-gray-200'
+                            }`}
                             onClick={() => onMonthSelected(parseInt(key))}
                         >
-                            {month}
+                            {monthName}
                         </p>
                     ))}
                 </div>
