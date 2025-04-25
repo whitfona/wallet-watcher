@@ -1,9 +1,9 @@
 import React, {createContext, useCallback, useContext, useEffect, useRef, useState} from 'react'
 import {FaRegCircleCheck} from 'react-icons/fa6'
 import {IoMdClose} from 'react-icons/io'
-import {IoAlertCircleOutline, IoWarningOutline} from 'react-icons/io5'
+import {IoAlertCircleOutline, IoInformationCircleOutline, IoWarningOutline} from 'react-icons/io5'
 
-type ToastType = 'success' | 'warning' | 'error';
+type ToastType = 'success' | 'warning' | 'error' | 'info';
 
 interface Toast {
     id: string;
@@ -15,6 +15,7 @@ interface ToastContextType {
     success: (message: string) => void;
     warning: (message: string) => void;
     error: (message: string) => void;
+    info: (message: string) => void;
 }
 
 interface ToastComponentProps {
@@ -46,6 +47,8 @@ const ToastComponent = ({message, type, onClose}: ToastComponentProps) => {
                 return 'bg-yellow-500'
             case 'error':
                 return 'bg-red-500'
+            case 'info':
+                return 'bg-gray-500'
             default:
                 return 'bg-green-500'
         }
@@ -82,6 +85,9 @@ const ToastComponent = ({message, type, onClose}: ToastComponentProps) => {
                     {type === 'warning' && (
                         <IoWarningOutline className="w-[20px] h-[20px] text-yellow-500 flex-shrink-0"/>
                     )}
+                    {type === 'info' && (
+                        <IoInformationCircleOutline className="w-[20px] h-[20px] text-gray-500 flex-shrink-0"/>
+                    )}
 
                     <p>{message}</p>
                 </div>
@@ -109,7 +115,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({children
     const contextValue = {
         success: (message: string) => addToast(message, 'success'),
         warning: (message: string) => addToast(message, 'warning'),
-        error: (message: string) => addToast(message, 'error')
+        error: (message: string) => addToast(message, 'error'),
+        info: (message: string) => addToast(message, 'info'),
     }
 
     return (
