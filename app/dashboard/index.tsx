@@ -17,7 +17,7 @@ import {supabase} from '@/utils/supabase'
 import {useToast} from '@/components/Toast'
 import {useDuplicateExpenseDialog} from '@/components/DuplicateExpenseDialog'
 import {useExpenseGrid} from '@/dashboard/hooks/useExpenseGrid'
-import {handleFileChange} from '@/dashboard/services/fileImport'
+import {handleFileChange} from '@/dashboard/services/fileImportService'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
