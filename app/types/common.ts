@@ -58,3 +58,9 @@ export interface SelectInterface {
     value: number
     label: string
 }
+
+export interface CategoryExpenseData {
+    name: string,
+    value: number,
+    color: string
+}

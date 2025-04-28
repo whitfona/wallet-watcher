@@ -3,10 +3,7 @@ import {useEffect, useState} from 'react'
 import {CategoryBreakdownPieChart} from '@/charts/CategoryBreakdownPieChart'
 import {useToast} from '@/components/Toast'
 import {AnnualInflowOutflowBarChart} from '@/charts/AnnualInflowOutflowBarChart'
-
-const DEFAULT_DATA = [
-    {name: 'No Data', value: 100},
-]
+import type {CategoryExpenseData} from '@/types/common'
 
 // Function to help match category names more flexibly
 const getCategoryType = (categoryName: string): string => {
@@ -52,6 +49,7 @@ const CATEGORY_COLORS: { [key: string]: string } = {
     'Travel': '#0088FE', // Blue
     'Other': '#8884D8',  // Purple
 }
+// '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'
 
 // Main categories order
 const MAIN_CATEGORIES = ['Food', 'Fun', 'Travel']
@@ -236,13 +234,13 @@ export function Index() {
     }, [])
 
     // Prepare data for the pie chart (main categories only)
-    const pieChartData = mainCategoryData.length > 0
+    const pieChartData: CategoryExpenseData[] = mainCategoryData.length > 0
         ? mainCategoryData.map(category => ({
             name: category.name,
             value: category.value,
             color: category.color
         }))
-        : DEFAULT_DATA
+        : []
 
     // Format currency for display
     const formatCurrency = (amount: number) => {
