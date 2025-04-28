@@ -2,6 +2,7 @@ import {supabase} from '@/utils/supabase'
 import {useEffect, useState} from 'react'
 import {CategoryBreakdownPieChart} from '@/charts/CategoryBreakdownPieChart'
 import {useToast} from '@/components/Toast'
+import {AnnualInflowOutflowBarChart} from '@/charts/AnnualInflowOutflowBarChart'
 
 const DEFAULT_DATA = [
     {name: 'No Data', value: 100},
@@ -330,6 +331,8 @@ export function Index() {
                     )}
                 </div>
             )}
+
+            <AnnualInflowOutflowBarChart/>
         </main>
     )
 }
