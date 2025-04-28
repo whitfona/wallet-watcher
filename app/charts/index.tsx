@@ -7,6 +7,7 @@ import type {CategoryExpenseData, MainCategoryData} from '@/types/common'
 import {formatCurrency} from '@/utils/helpers'
 import {getCategoryTotals} from '@/dashboard/services/categoryService'
 import {ExpenseCategoryBreakdown} from '@/charts/ExpenseCategoryBreakdown'
+import {DialogCalendar} from '@/components/DialogCalendar'
 
 export function Index() {
     const toast = useToast()
@@ -14,18 +15,23 @@ export function Index() {
     const [loading, setLoading] = useState(true)
     const [mainCategoryData, setMainCategoryData] = useState<MainCategoryData[]>([])
     const [categoryTotalsError, setCategoryTotalsError] = useState<string | null>(null)
+    const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
+    const [year, setYear] = useState<number>(new Date().getFullYear())
 
-    const getCategoryTotalsLocal = async () => {
+    const getCategoryTotalsLocal = async (): Promise<void> => {
         setLoading(true)
         setCategoryTotalsError(null)
 
         try {
             console.log('Fetching expenses data...')
-            const {data, error} = await supabase
+            const endMonth = month === 12 ? 1 : month + 1
+            const endYear = month === 12 ? year + 1 : year
+
+            const {data: categoriesData, error} = await supabase
                 .from('expenses')
                 .select('inflow, outflow, categories(name)')
-                .gte('date', '2025-04-01')
-                .lt('date', '2025-05-01')
+                .gte('date', `${year}-${month}-01`)
+                .lte('date', `${endYear}-${endMonth}-01`)
                 .neq('category_id', 5) // exclude "income" category
 
             if (error) {
@@ -34,12 +40,12 @@ export function Index() {
                 return
             }
 
-            if (!data || data.length === 0) {
+            if (!categoriesData || categoriesData.length === 0) {
                 setMainCategoryData([])
                 return
             }
 
-            const mainCategoryDataArray = await getCategoryTotals(data)
+            const mainCategoryDataArray = await getCategoryTotals(categoriesData)
             setMainCategoryData(mainCategoryDataArray)
         } catch (error) {
             toast.error('Error categorizing expenses')
@@ -50,8 +56,13 @@ export function Index() {
     }
 
     useEffect(() => {
-        (() => getCategoryTotalsLocal())()
-    }, [])
+        ;(() => getCategoryTotalsLocal())()
+    }, [month, year])
+
+    const onDateChange = async (month: number, year: number) => {
+        setMonth(month)
+        setYear(year)
+    }
 
     // Prepare data for the pie chart (main categories only)
     const pieChartData: CategoryExpenseData[] = mainCategoryData.length > 0
@@ -82,6 +93,11 @@ export function Index() {
                 <div className="space-y-8">
                     <div className="bg-white p-6 rounded-lg shadow-md">
                         <h2 className="text-xl font-semibold text-center mb-4">Expenses by Category</h2>
+                        <DialogCalendar
+                            initialMonth={month}
+                            initialYear={year}
+                            onDateChange={onDateChange}
+                        />
                         <div className="h-[400px]">
                             <CategoryBreakdownPieChart displayData={pieChartData}/>
                         </div>
