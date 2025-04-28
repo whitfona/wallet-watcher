@@ -32,57 +32,57 @@ export function Index() {
     const [, setIsLoading] = useState(true)
 
     useEffect(() => {
-        const fetchData = async () => {
-                try {
-                    setIsLoading(true)
-                    const [accountsResponse, categoriesResponse, payeesResponse] = await Promise.all([
-                        supabase.from('accounts_view').select('*').order('name', {ascending: true}),
-                        supabase.from('categories_view').select('*').order('name', {ascending: true}),
-                        supabase.from('payees_view').select('*').order('name', {ascending: true})
-                    ])
-
-                    if (accountsResponse.error) {
-                        toast.error('Failed to load accounts')
-                        return
-                    }
-                    if (categoriesResponse.error) {
-                        toast.error('Failed to load categories')
-                        return
-                    }
-                    if (payeesResponse.error) {
-                        toast.error('Failed to load payees')
-                        return
-                    }
-
-                    const mappedAccounts: SelectInterface[] = accountsResponse.data.map((account) => ({
-                        value: account.id,
-                        label: account.name,
-                    }))
-                    setAccounts(mappedAccounts)
-
-                    const mappedCategories: SelectInterface[] = categoriesResponse.data.map((category) => ({
-                        value: category.id,
-                        label: category.name,
-                    }))
-                    setCategories(mappedCategories)
-
-                    const mappedPayees: SelectInterface[] = payeesResponse.data.map((payee) => ({
-                        value: payee.id,
-                        label: payee.name,
-                    }))
-                    setPayees(mappedPayees)
-
-                    await fetchExpenses(month, year)
-                } catch (error) {
-                    console.error('Error fetching data:', error)
-                    toast.error('Failed to load data')
-                } finally {
-                    setIsLoading(false)
-                }
-            }
-
         ;(() => fetchData())()
     }, [])
+
+    const fetchData = async () => {
+        try {
+            setIsLoading(true)
+            const [accountsResponse, categoriesResponse, payeesResponse] = await Promise.all([
+                supabase.from('accounts_view').select('*').order('name', {ascending: true}),
+                supabase.from('categories_view').select('*').order('name', {ascending: true}),
+                supabase.from('payees_view').select('*').order('name', {ascending: true})
+            ])
+
+            if (accountsResponse.error) {
+                toast.error('Failed to load accounts')
+                return
+            }
+            if (categoriesResponse.error) {
+                toast.error('Failed to load categories')
+                return
+            }
+            if (payeesResponse.error) {
+                toast.error('Failed to load payees')
+                return
+            }
+
+            const mappedAccounts: SelectInterface[] = accountsResponse.data.map((account) => ({
+                value: account.id,
+                label: account.name,
+            }))
+            setAccounts(mappedAccounts)
+
+            const mappedCategories: SelectInterface[] = categoriesResponse.data.map((category) => ({
+                value: category.id,
+                label: category.name,
+            }))
+            setCategories(mappedCategories)
+
+            const mappedPayees: SelectInterface[] = payeesResponse.data.map((payee) => ({
+                value: payee.id,
+                label: payee.name,
+            }))
+            setPayees(mappedPayees)
+
+            await fetchExpenses(month, year)
+        } catch (error) {
+            console.error('Error fetching data:', error)
+            toast.error('Failed to load data')
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     const fetchExpenses = async (selectedMonth: number, selectedYear: number): Promise<void> => {
         try {
@@ -112,7 +112,6 @@ export function Index() {
     const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
     const [year, setYear] = useState<number>(new Date().getFullYear())
     const [showAddForm, setShowAddForm] = useState(false)
-    // const [showDeleteButton, setShowDeleteButton] = useState(false)
     const [newExpense, setNewExpense] = useState<ExpenseFormData>({
         id: null,
         date: '',
