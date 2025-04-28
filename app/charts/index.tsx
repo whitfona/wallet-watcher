@@ -4,6 +4,7 @@ import {CategoryBreakdownPieChart} from '@/charts/CategoryBreakdownPieChart'
 import {useToast} from '@/components/Toast'
 import {AnnualInflowOutflowBarChart} from '@/charts/AnnualInflowOutflowBarChart'
 import type {CategoryExpenseData} from '@/types/common'
+import {formatCurrency} from '@/utils/helpers'
 
 // Function to help match category names more flexibly
 const getCategoryType = (categoryName: string): string => {
@@ -241,14 +242,6 @@ export function Index() {
             color: category.color
         }))
         : []
-
-    // Format currency for display
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-        }).format(amount)
-    }
 
     // Calculate total expenses
     const totalExpenses = mainCategoryData.reduce((sum, category) => sum + category.value, 0)
