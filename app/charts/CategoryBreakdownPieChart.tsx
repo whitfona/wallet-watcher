@@ -1,4 +1,5 @@
 import {Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip} from 'recharts'
+import {formatCurrency} from '@/utils/helpers'
 
 interface CategoryBreakdownPieChartProps {
     displayData: { name: string, value: number }[]
@@ -29,7 +30,7 @@ export const CategoryBreakdownPieChart = ({displayData}: CategoryBreakdownPieCha
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
                     ))}
                 </Pie>
-                <Tooltip formatter={(value) => `$${value}`}/>
+                <Tooltip formatter={(value: number) => formatCurrency(value)}/>
                 <Legend layout="vertical" align="right" verticalAlign="middle" iconType="circle"/>
             </PieChart>
         </ResponsiveContainer>
