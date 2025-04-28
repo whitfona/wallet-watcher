@@ -22,7 +22,7 @@ export function Index() {
             console.log('Fetching expenses data...')
             const {data, error} = await supabase
                 .from('expenses')
-                .select('inflow, outflow, date, category_id, categories(name)')
+                .select('inflow, outflow, categories(name)')
                 .gte('date', '2025-04-01')
                 .lt('date', '2025-05-01')
                 .neq('category_id', 5) // exclude "income" category
@@ -34,7 +34,8 @@ export function Index() {
             }
 
             if (!data || data.length === 0) {
-                toast.error('No expense data found')
+                setMainCategoryData([])
+                return
             }
 
             const mainCategoryDataArray = await getCategoryTotals(data)
@@ -48,7 +49,7 @@ export function Index() {
     }
 
     useEffect(() => {
-        getCategoryTotalsLocal()
+        (() => getCategoryTotalsLocal())()
     }, [])
 
     // Prepare data for the pie chart (main categories only)
@@ -60,13 +61,12 @@ export function Index() {
         }))
         : []
 
-    // Calculate total expenses
     const totalExpenses = mainCategoryData.reduce((sum, category) => sum + category.value, 0)
 
     return (
         <main className="pt-8 pb-4 max-w-4xl mx-auto">
             <header>
-                <h1 className="text-center text-2xl font-bold mb-6">Expense Analysis</h1>
+                <h1 className="text-center text-2xl font-bold mb-6">Charts</h1>
             </header>
 
             {loading ? (
@@ -79,26 +79,20 @@ export function Index() {
                 </div>
             ) : (
                 <div className="space-y-8">
-                    {/* Debug info - comment out in production */}
-                    <div className="bg-gray-100 p-4 rounded-lg text-xs">
-                        <p>Debug: {pieChartData.map(item => `${item.name}: ${item.value}`).join(', ')}</p>
-                    </div>
-
-                    {/* Main Pie Chart */}
                     <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-xl font-semibold text-center mb-4">Expenses by Main Category</h2>
+                        <h2 className="text-xl font-semibold text-center mb-4">Expenses by Category</h2>
                         <div className="h-[400px]">
                             <CategoryBreakdownPieChart displayData={pieChartData}/>
                         </div>
                     </div>
 
-                    {/* Category Breakdown */}
                     {mainCategoryData.length > 0 && (
                         <div className="bg-white p-6 rounded-lg shadow-md">
                             <h2 className="text-xl font-semibold mb-4">Category Breakdown</h2>
                             <p className="text-gray-700 mb-4">Total Expenses: {formatCurrency(totalExpenses)}</p>
 
                             <div className="space-y-6">
+                                {/* Main Categories */}
                                 {mainCategoryData.map((mainCategory) => (
                                     <div key={mainCategory.name} className="border-b pb-4 last:border-b-0">
                                         <div className="flex justify-between items-center mb-2">
@@ -132,10 +126,6 @@ export function Index() {
                                 ))}
                             </div>
                         </div>
-                    )}
-
-                    {mainCategoryData.length === 0 && !categoryTotalsError && (
-                        <p className="text-center mt-4">No expense data found for the selected period</p>
                     )}
                 </div>
             )}

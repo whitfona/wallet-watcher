@@ -1,4 +1,4 @@
-import type {CategoryValues} from '@/types/common'
+import type {CategoryExpenseRecord, CategoryValues} from '@/types/common'
 
 export const getCategoryType = (categoryName: string): string => {
     const lowerName = categoryName.toLowerCase()
@@ -45,9 +45,8 @@ const CATEGORY_COLORS: { [key: string]: string } = {
 }
 // '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'
 
-export const getCategoryTotals = async (expenses) => {
+export const getCategoryTotals = async (expenses: CategoryExpenseRecord[]) => {
     try {
-
         console.log('Expense data being processed:', expenses)
         console.log('Unique category names:', [...new Set(expenses.map(e => e.categories?.name))])
 
@@ -61,14 +60,13 @@ export const getCategoryTotals = async (expenses) => {
             subcategoryTotals[category] = {}
         })
 
+        // TODO: Do we have an 'Other' category or will it just be 'Misc'?
         // Also initialize Other category
         mainCategoryTotals['Other'] = {inflow: 0, outflow: 0}
         subcategoryTotals['Other'] = {}
 
-        // Process each expense
         expenses.forEach(expense => {
             const subcategory = expense.categories?.name || 'Unknown'
-            // Use flexible category mapping
             const mainCategory = getCategoryType(subcategory)
 
             console.log(`Mapping: ${subcategory} -> ${mainCategory}`)
@@ -108,16 +106,17 @@ export const getCategoryTotals = async (expenses) => {
                 color: CATEGORY_COLORS[name] || CATEGORY_COLORS.Other,
                 subcategories: formattedSubcategories
             }
-        }).filter(category => category.value > 0) // Only include categories with values
-
-        // Sort categories by main category order
-        mainCategoryDataArray.sort((a, b) => {
-            const indexA = MAIN_CATEGORIES.indexOf(a.name)
-            const indexB = MAIN_CATEGORIES.indexOf(b.name)
-            if (indexA === -1) return 1
-            if (indexB === -1) return -1
-            return indexA - indexB
         })
+        // }).filter(category => category.value > 0) // Only include categories with values
+
+        // // Sort categories by main category order
+        // mainCategoryDataArray.sort((a, b) => {
+        //     const indexA = MAIN_CATEGORIES.indexOf(a.name)
+        //     const indexB = MAIN_CATEGORIES.indexOf(b.name)
+        //     if (indexA === -1) return 1
+        //     if (indexB === -1) return -1
+        //     return indexA - indexB
+        // })
 
         console.log('Processed main category data:', mainCategoryDataArray)
         return mainCategoryDataArray

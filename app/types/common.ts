@@ -82,3 +82,12 @@ export interface CategoryValues {
     inflow: number
     outflow: number
 }
+
+// shape from the backend
+export interface CategoryExpenseRecord {
+    inflow: number | null
+    outflow: number | null,
+    categories: {
+        name: string
+    }
+}

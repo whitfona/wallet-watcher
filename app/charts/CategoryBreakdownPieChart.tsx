@@ -12,7 +12,7 @@ export const CategoryBreakdownPieChart = (
     return (
         <>
             {displayData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={400}>
+                    <ResponsiveContainer width="100%" height={displayData.length > 0 ? 400 : '100%'}>
                         <PieChart>
                             <Pie
                                 data={displayData}
@@ -31,7 +31,7 @@ export const CategoryBreakdownPieChart = (
                             <Legend layout="vertical" align="right" verticalAlign="middle" iconType="circle"/>
                         </PieChart>
                     </ResponsiveContainer>)
-                : <p>No expense data</p>
+                : <p className="text-gray-400">No expense data for this period</p>
             }
         </>
     )
