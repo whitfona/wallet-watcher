@@ -6,6 +6,7 @@ import {AnnualInflowOutflowBarChart} from '@/charts/AnnualInflowOutflowBarChart'
 import type {CategoryExpenseData, MainCategoryData} from '@/types/common'
 import {formatCurrency} from '@/utils/helpers'
 import {getCategoryTotals} from '@/dashboard/services/categoryService'
+import {ExpenseCategoryBreakdown} from '@/charts/ExpenseCategoryBreakdown'
 
 export function Index() {
     const toast = useToast()
@@ -88,43 +89,16 @@ export function Index() {
 
                     {mainCategoryData.length > 0 && (
                         <div className="bg-white p-6 rounded-lg shadow-md">
-                            <h2 className="text-xl font-semibold mb-4">Category Breakdown</h2>
-                            <p className="text-gray-700 mb-4">Total Expenses: {formatCurrency(totalExpenses)}</p>
+                            <h2 className="text-xl font-semibold mb-2">Category Breakdowns</h2>
+                            <p className="text-gray-700 mb-6">Total Expenses: {formatCurrency(totalExpenses)}</p>
 
-                            <div className="space-y-6">
-                                {/* Main Categories */}
-                                {mainCategoryData.map((mainCategory) => (
-                                    <div key={mainCategory.name} className="border-b pb-4 last:border-b-0">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <h3 className="text-lg font-medium flex items-center">
-                                                <span
-                                                    className="inline-block w-4 h-4 rounded-full mr-2"
-                                                    style={{backgroundColor: mainCategory.color}}
-                                                ></span>
-                                                {mainCategory.name}
-                                            </h3>
-                                            <div className="font-semibold">
-                                                {formatCurrency(mainCategory.value)}
-                                                <span className="text-gray-500 text-sm ml-2">
-                                                    ({((mainCategory.value / totalExpenses) * 100).toFixed(1)}%)
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {/* Subcategories */}
-                                        <div className="pl-6 space-y-1 mt-2">
-                                            {Object.entries(mainCategory.subcategories)
-                                                .sort(([, a], [, b]) => b.net - a.net) // Sort by net value descending
-                                                .map(([subName, subValues]) => (
-                                                    <div key={subName} className="flex justify-between text-sm">
-                                                        <span className="text-gray-700">{subName}</span>
-                                                        <span>{formatCurrency(subValues.net)}</span>
-                                                    </div>
-                                                ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            {mainCategoryData.map((mainCategory) => (
+                                <ExpenseCategoryBreakdown
+                                    key={mainCategory.name}
+                                    mainCategory={mainCategory}
+                                    totalExpenses={totalExpenses}
+                                />
+                            ))}
                         </div>
                     )}
                 </div>
