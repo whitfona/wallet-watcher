@@ -64,3 +64,21 @@ export interface CategoryExpenseData {
     value: number,
     color: string
 }
+
+export interface MainCategoryData {
+    name: string
+    value: number
+    color: string
+    subcategories: {
+        [key: string]: {
+            inflow: number
+            outflow: number
+            net: number
+        }
+    }
+}
+
+export interface CategoryValues {
+    inflow: number
+    outflow: number
+}
