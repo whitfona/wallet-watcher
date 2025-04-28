@@ -70,7 +70,7 @@ export const DialogCalendar = ({initialMonth, initialYear, onDateChange, classNa
     }
 
     return (
-        <div className="max-w-fit mx-auto mb-10">
+        <div className="max-w-fit mx-auto">
             <button
                 className={`flex items-center gap-1 text-center font-bold uppercase cursor-pointer ${className}`}
                 type="button"

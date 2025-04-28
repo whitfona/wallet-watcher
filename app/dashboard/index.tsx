@@ -406,7 +406,7 @@ export function Index() {
             <header>
                 <h1 className="text-center text-2xl">WalletWatcher</h1>
                 <DialogCalendar
-                    className="mt-4"
+                    className="mt-4 mb-10"
                     initialMonth={month}
                     initialYear={year}
                     onDateChange={onDateChange}
