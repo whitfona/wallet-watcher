@@ -33,7 +33,7 @@ export function ItemManager<T extends { id?: number; name: string }>(
         isLoading = false
     }: ItemManagerProps<T>) {
     return (
-        <section>
+        <section className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="font-bold text-gray-700">{title}</h2>
             <form className="mt-2 flex items-center" onSubmit={onItemSubmit}>
                 <input
