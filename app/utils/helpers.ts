@@ -5,11 +5,15 @@ export const formatDate = (date: string) => {
     return parsedDate.toLocaleDateString('en-CA')
 }
 
-export const formatCurrency = (currency: number | null) => {
+export const formatCurrency = (currency: number | null, decimalPlaces: number = 2) => {
     if (!currency) {
         return ''
     }
-    return new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format(currency)
+    return new Intl.NumberFormat('en-CA', {
+        style: 'currency',
+        currency: 'CAD',
+        maximumFractionDigits: decimalPlaces
+    }).format(currency)
 }
 
 export const formatDateForTimestamptz = (date: string | Date) => {
