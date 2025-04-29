@@ -10,7 +10,7 @@ import {
 import type {Route} from './+types/root'
 import './app.css'
 import {ToastProvider} from '@/components/Toast'
-import {DuplicateExpenseProvider} from '@/components/DuplicateExpenseDialog'
+import {DuplicateExpenseProvider} from '@/components/DialogDuplicateExpense'
 
 export const links: Route.LinksFunction = () => [
     {rel: 'preconnect', href: 'https://fonts.googleapis.com'},

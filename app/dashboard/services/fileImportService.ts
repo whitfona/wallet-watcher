@@ -85,7 +85,7 @@ export const processExpense = async (
             outflow: number | null,
             inflow: number | null
         ) => Promise<boolean>,
-        showDuplicateDialog: (
+        showDialogDuplicationExpense: (
             newExpense: ExpenseRecord,
             duplicate: ExpenseRecord,
             onAdd: () => void,
@@ -99,7 +99,7 @@ export const processExpense = async (
         checkForDuplicateExpense,
         createPayeeIfNeeded,
         insertExpense,
-        showDuplicateDialog
+        showDialogDuplicationExpense
     } = options
 
     try {
@@ -126,7 +126,7 @@ export const processExpense = async (
             counters.duplicateCount++
             const newExpenseFormatted = formatImportedExpenseForDialog(item, formattedDate, account)
 
-            showDuplicateDialog(
+            showDialogDuplicationExpense(
                 newExpenseFormatted,
                 duplicate,
                 async () => {
@@ -207,7 +207,7 @@ export const handleFileChange = async (
             outflow: number | null,
             inflow: number | null
         ) => Promise<boolean>,
-        showDuplicateDialog: (
+        showDialogDuplicationExpense: (
             newExpense: ExpenseRecord,
             duplicate: ExpenseRecord,
             onAdd: () => void,
@@ -227,7 +227,7 @@ export const handleFileChange = async (
         checkForDuplicateExpense,
         createPayeeIfNeeded,
         insertExpense,
-        showDuplicateDialog
+        showDialogDuplicationExpense
     } = options
 
     if (!e.target || !e.target.files) {
@@ -285,7 +285,7 @@ export const handleFileChange = async (
                         checkForDuplicateExpense,
                         createPayeeIfNeeded,
                         insertExpense,
-                        showDuplicateDialog
+                        showDialogDuplicationExpense
                     }
                 )
             }

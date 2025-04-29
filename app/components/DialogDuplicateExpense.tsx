@@ -4,7 +4,7 @@ import type {ExpenseRecord} from '@/types/common'
 import {RenderExpenseDetails} from '@/components/RenderExpenseDetails'
 
 interface DuplicateExpenseContextType {
-    showDuplicateDialog: (expense: ExpenseRecord, matchingExpense: ExpenseRecord, onAccept: () => void, onReject: () => void) => void
+    showDialogDuplicationExpense: (expense: ExpenseRecord, matchingExpense: ExpenseRecord, onAccept: () => void, onReject: () => void) => void
 }
 
 interface DuplicateExpenseDialogProps {
@@ -30,7 +30,7 @@ export const DuplicateExpenseProvider: React.FC<DuplicateExpenseDialogProps> = (
         onReject: null
     })
 
-    const showDuplicateDialog = useCallback((
+    const showDialogDuplicationExpense = useCallback((
         expense: ExpenseRecord,
         matchingExpense: ExpenseRecord,
         onAccept: () => void,
@@ -63,7 +63,7 @@ export const DuplicateExpenseProvider: React.FC<DuplicateExpenseDialogProps> = (
     }, [dialogState.onReject, closeDialog])
 
     return (
-        <DuplicateExpenseContext.Provider value={{showDuplicateDialog}}>
+        <DuplicateExpenseContext.Provider value={{showDialogDuplicationExpense}}>
             {children}
             {dialogState.isOpen && dialogState.expense && dialogState.matchingExpense && (
                 <dialog
@@ -110,7 +110,7 @@ export const DuplicateExpenseProvider: React.FC<DuplicateExpenseDialogProps> = (
     )
 }
 
-export const useDuplicateExpenseDialog = (): DuplicateExpenseContextType => {
+export const useDialogDuplicateExpense = (): DuplicateExpenseContextType => {
     const context = useContext(DuplicateExpenseContext)
     if (!context) {
         throw new Error('useDuplicateExpenseDialog must be used within a DuplicateExpenseProvider')

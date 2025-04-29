@@ -15,7 +15,7 @@ import {BalanceSummary} from '@/components/BalanceSummary'
 import {formatDateForTimestamptz} from '@/utils/helpers'
 import {supabase} from '@/utils/supabase'
 import {useToast} from '@/components/Toast'
-import {useDuplicateExpenseDialog} from '@/components/DuplicateExpenseDialog'
+import {useDialogDuplicateExpense} from '@/components/DialogDuplicateExpense'
 import {useExpenseGrid} from '@/dashboard/hooks/useExpenseGrid'
 import {handleFileChange} from '@/dashboard/services/fileImportService'
 
@@ -23,7 +23,7 @@ export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
     const agGridRef = useRef<AgGridReact<ExpenseRecord>>(null)
     const toast = useToast()
-    const {showDuplicateDialog} = useDuplicateExpenseDialog()
+    const {showDialogDuplicationExpense} = useDialogDuplicateExpense()
 
     const [accounts, setAccounts] = useState<SelectInterface[]>([])
     const [categories, setCategories] = useState<SelectInterface[]>([])
@@ -213,7 +213,7 @@ export function Index() {
         const matchingExpense = await checkForDuplicateExpense(newExpense)
         if (matchingExpense) {
             setShowAddForm(false)
-            showDuplicateDialog(
+            showDialogDuplicationExpense(
                 {
                     ...newExpense,
                     id: -1, // here to appease typescript
@@ -396,7 +396,7 @@ export function Index() {
             checkForDuplicateExpense,
             createPayeeIfNeeded,
             insertExpense,
-            showDuplicateDialog
+            showDialogDuplicationExpense,
         })
     }
 
