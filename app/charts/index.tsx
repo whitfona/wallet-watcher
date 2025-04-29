@@ -127,6 +127,11 @@ export function Index() {
 
             <div className="bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold text-center mb-4">Expenses by Category</h2>
+                <DialogCalendar
+                    initialMonth={month}
+                    initialYear={year}
+                    onDateChange={onDateChange}
+                />
 
                 <div className="h-[480px] flex justify-center flex-col">
                     {loadingCategories ? (
@@ -138,18 +143,11 @@ export function Index() {
                             <p>{categoryTotalsError}</p>
                         </div>
                     ) : (
-                        <>
-                            <div className="space-y-8">
-                                <DialogCalendar
-                                    initialMonth={month}
-                                    initialYear={year}
-                                    onDateChange={onDateChange}
-                                />
-                                <div className="h-[400px]">
-                                    <CategoryBreakdownPieChart displayData={pieChartData}/>
-                                </div>
+                        <div className="space-y-8">
+                            <div className="h-[400px]">
+                                <CategoryBreakdownPieChart displayData={pieChartData}/>
                             </div>
-                        </>
+                        </div>
                     )}
                 </div>
             </div>
@@ -171,6 +169,18 @@ export function Index() {
 
             <div className="bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold text-center mb-4">Annual Cashflows</h2>
+                <div className="mx-auto max-w-fit flex justify-between items-center gap-2 mb-6">
+                    <FaCaretLeft
+                        className="w-[20px] h-[20px] cursor-pointer text-gray-400 hover:text-gray-700"
+                        onClick={() => onYearChange('decrement')}
+                    />
+                    <p className="text-center">{cashflowYear}</p>
+                    <FaCaretRight
+                        className="w-[20px] h-[20px] cursor-pointer text-gray-400 hover:text-gray-700"
+                        onClick={() => onYearChange('increment')}
+                    />
+                </div>
+
                 <div className="h-[480px] flex justify-center flex-col">
                     {loadingCashflowData ? (
                         <div className="flex justify-center p-8">
@@ -181,21 +191,7 @@ export function Index() {
                             <p>{cashflowDataError}</p>
                         </div>
                     ) : (
-                        <>
-                            <div className="mx-auto flex justify-between items-center mb-6">
-                                <FaCaretLeft
-                                    className="w-[20px] h-[20px] cursor-pointer text-gray-400 hover:text-gray-700"
-                                    onClick={() => onYearChange('decrement')}
-                                />
-                                <p className="text-center">{cashflowYear}</p>
-                                <FaCaretRight
-                                    className="w-[20px] h-[20px] cursor-pointer text-gray-400 hover:text-gray-700"
-                                    onClick={() => onYearChange('increment')}
-                                />
-                            </div>
-
-                            <AnnualCashflowBarChart displayData={cashflowData}/>
-                        </>
+                        <AnnualCashflowBarChart displayData={cashflowData}/>
                     )}
                 </div>
             </div>
