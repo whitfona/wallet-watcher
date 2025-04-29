@@ -47,9 +47,6 @@ const CATEGORY_COLORS: { [key: string]: string } = {
 
 export const getCategoryTotals = async (expenses: CategoryExpenseRecord[]) => {
     try {
-        console.log('Expense data being processed:', expenses)
-        console.log('Unique category names:', [...new Set(expenses.map(e => e.categories?.name))])
-
         // Initialize data structures for both main categories and subcategories
         const mainCategoryTotals: { [key: string]: CategoryValues } = {}
         const subcategoryTotals: { [key: string]: { [subcategory: string]: CategoryValues } } = {}
@@ -66,10 +63,8 @@ export const getCategoryTotals = async (expenses: CategoryExpenseRecord[]) => {
         subcategoryTotals['Other'] = {}
 
         expenses.forEach(expense => {
-            const subcategory = expense.categories[0].name || 'Unknown'
+            const subcategory = expense.categories.name || 'Unknown'
             const mainCategory = getCategoryType(subcategory)
-
-            console.log(`Mapping: ${subcategory} -> ${mainCategory}`)
 
             // Update main category totals
             mainCategoryTotals[mainCategory].inflow += expense.inflow || 0
@@ -118,7 +113,6 @@ export const getCategoryTotals = async (expenses: CategoryExpenseRecord[]) => {
         //     return indexA - indexB
         // })
 
-        console.log('Processed main category data:', mainCategoryDataArray)
         return mainCategoryDataArray
     } catch (err) {
         throw new Error('An unexpected error occurred', {cause: err})
