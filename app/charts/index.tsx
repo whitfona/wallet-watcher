@@ -24,7 +24,6 @@ export function Index() {
         setCategoryTotalsError(null)
 
         try {
-            console.log('Fetching expenses data...')
             const endMonth = month === 12 ? 1 : month + 1
             const endYear = month === 12 ? year + 1 : year
 
