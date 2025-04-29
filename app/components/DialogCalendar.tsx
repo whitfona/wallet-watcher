@@ -1,5 +1,6 @@
-import {FaCaretDown, FaCaretLeft, FaCaretRight} from 'react-icons/fa'
+import {FaCaretDown} from 'react-icons/fa'
 import React, {useEffect, useRef, useState} from 'react'
+import {YearSelector} from '@/components/YearSelector'
 
 interface DialogCalendarProps {
     initialMonth?: number
@@ -51,14 +52,6 @@ export const DialogCalendar = ({initialMonth, initialYear, onDateChange, classNa
         closeCalendar()
     }
 
-    const onYearChange = (action: 'increment' | 'decrement') => {
-        if (!year) {
-            return
-        }
-
-        action === 'increment' ? setYear(year + 1) : setYear(year - 1)
-    }
-
     const onClick = (event: Event) => {
         if (event.target === calendarRef.current) {
             closeCalendar()
@@ -83,17 +76,11 @@ export const DialogCalendar = ({initialMonth, initialYear, onDateChange, classNa
                 ref={calendarRef}
                 className="justify-self-center mt-[5%] border border-gray-100 rounded-lg p-4 shadow backdrop:bg-black/60"
             >
-                <div className="flex justify-between">
-                    <FaCaretLeft
-                        className="w-[20px] h-[20px] cursor-pointer text-gray-400 hover:text-gray-700"
-                        onClick={() => onYearChange('decrement')}
-                    />
-                    <p className="text-center">{year}</p>
-                    <FaCaretRight
-                        className="w-[20px] h-[20px] cursor-pointer text-gray-400 hover:text-gray-700"
-                        onClick={() => onYearChange('increment')}
-                    />
-                </div>
+                <YearSelector
+                    className="w-fit mx-auto"
+                    year={year}
+                    setYearChange={setYear}
+                />
 
                 <div className="grid grid-cols-4 gap-2 mt-4">
                     {Object.entries(MONTHS).map(([key, monthName]) => (

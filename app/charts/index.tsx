@@ -8,7 +8,7 @@ import {formatCurrency} from '@/utils/helpers'
 import {getCategoryTotals} from '@/dashboard/services/categoryService'
 import {ExpenseCategoryBreakdown} from '@/charts/ExpenseCategoryBreakdown'
 import {DialogCalendar} from '@/components/DialogCalendar'
-import {FaCaretLeft, FaCaretRight} from 'react-icons/fa'
+import {YearSelector} from '@/components/YearSelector'
 
 export function Index() {
     const toast = useToast()
@@ -169,17 +169,11 @@ export function Index() {
 
             <div className="bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold text-center mb-4">Annual Cashflows</h2>
-                <div className="mx-auto max-w-fit flex justify-between items-center gap-2 mb-6">
-                    <FaCaretLeft
-                        className="w-[20px] h-[20px] cursor-pointer text-gray-400 hover:text-gray-700"
-                        onClick={() => onYearChange('decrement')}
-                    />
-                    <p className="text-center">{cashflowYear}</p>
-                    <FaCaretRight
-                        className="w-[20px] h-[20px] cursor-pointer text-gray-400 hover:text-gray-700"
-                        onClick={() => onYearChange('increment')}
-                    />
-                </div>
+                <YearSelector
+                    className="w-fit mx-auto"
+                    year={cashflowYear}
+                    setYearChange={setCashflowYear}
+                />
 
                 <div className="h-[480px] flex justify-center flex-col">
                     {loadingCashflowData ? (
