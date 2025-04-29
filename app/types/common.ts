@@ -91,3 +91,10 @@ export interface CategoryExpenseRecord {
         name: string
     }[]
 }
+
+//shape from the backend
+export interface MonthlyCashflowRecord {
+    month: string
+    inflow: number
+    outflow: number
+}
