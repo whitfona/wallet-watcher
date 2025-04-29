@@ -66,7 +66,7 @@ export const getCategoryTotals = async (expenses: CategoryExpenseRecord[]) => {
         subcategoryTotals['Other'] = {}
 
         expenses.forEach(expense => {
-            const subcategory = expense.categories?.name || 'Unknown'
+            const subcategory = expense.categories[0].name || 'Unknown'
             const mainCategory = getCategoryType(subcategory)
 
             console.log(`Mapping: ${subcategory} -> ${mainCategory}`)

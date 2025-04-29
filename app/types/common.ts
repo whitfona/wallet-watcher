@@ -89,5 +89,5 @@ export interface CategoryExpenseRecord {
     outflow: number | null,
     categories: {
         name: string
-    }
+    }[]
 }
