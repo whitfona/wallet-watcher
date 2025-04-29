@@ -27,12 +27,13 @@ export function Index() {
             const endMonth = month === 12 ? 1 : month + 1
             const endYear = month === 12 ? year + 1 : year
 
-            const {data: categoriesData, error} = await supabase
-                .from('expenses')
-                .select('inflow, outflow, categories(name)')
-                .gte('date', `${year}-${month}-01`)
-                .lte('date', `${endYear}-${endMonth}-01`)
-                .neq('category_id', 5) // exclude "income" category
+            const {
+                data: categoriesData,
+                error
+            } = await supabase.rpc('get_monthly_expenses_by_category', {
+                start_date: `${year}-${month}-01`,
+                end_date: `${endYear}-${endMonth}-01`
+            })
 
             if (error) {
                 toast.error('Failed to fetch expenses')
@@ -132,7 +133,7 @@ export function Index() {
                     onDateChange={onDateChange}
                 />
 
-                <div className="h-[480px] flex justify-center flex-col">
+                <div className={`flex justify-center flex-col ${pieChartData.length > 0 ? 'h-[480px]' : ''}`}>
                     {loadingCategories ? (
                         <div className="flex justify-center p-8">
                             <p>Loading chart data...</p>
@@ -143,9 +144,7 @@ export function Index() {
                         </div>
                     ) : (
                         <div className="space-y-8">
-                            <div className="h-[400px]">
-                                <CategoryBreakdownPieChart displayData={pieChartData}/>
-                            </div>
+                            <CategoryBreakdownPieChart displayData={pieChartData}/>
                         </div>
                     )}
                 </div>

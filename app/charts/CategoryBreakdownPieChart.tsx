@@ -12,7 +12,7 @@ export const CategoryBreakdownPieChart = (
     return (
         <>
             {displayData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={displayData.length > 0 ? 400 : '100%'}>
+                    <ResponsiveContainer width="100%" height={400}>
                         <PieChart>
                             <Pie
                                 data={displayData}

@@ -63,7 +63,7 @@ export const getCategoryTotals = async (expenses: CategoryExpenseRecord[]) => {
         subcategoryTotals['Other'] = {}
 
         expenses.forEach(expense => {
-            const subcategory = expense.categories.name || 'Unknown'
+            const subcategory = expense.category || 'Unknown'
             const mainCategory = getCategoryType(subcategory)
 
             // Update main category totals
