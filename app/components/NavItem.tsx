@@ -9,9 +9,9 @@ interface NavItemProps {
 
 export function NavItem({to, icon, label}: NavItemProps) {
     return (
-        <NavLink 
-            to={to} 
-            className={({isActive}) => 
+        <NavLink
+            to={to}
+            className={({isActive}) =>
                 `flex items-center gap-1 ${isActive ? 'text-gray-700' : 'text-gray-400 hover:text-gray-700'}`
             }
         >
