@@ -23,7 +23,7 @@ export default function Auth() {
     return (
         <div className="grid h-[100vh] place-content-center">
             <div className="bg-white p-6 rounded-lg shadow-md min-w-80">
-                <h1 className="text-2xl mb-10">Wallet Watcher</h1>
+                <h1 className="text-2xl mb-10">WalletWatcher</h1>
 
                 <form onSubmit={handleLogin}>
                     <input
