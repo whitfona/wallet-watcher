@@ -1,87 +1,67 @@
-# Welcome to React Router!
+# Wallet Watcher
 
-A modern, production-ready template for building full-stack React applications using React Router.
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+A modern web application for tracking monthly transactions, built with React, TypeScript, and Supabase.
 
 ## Features
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- User authentication and management
+- Create and manage multiple wallets
+- Track deposits and withdrawals
+- Transaction history for each wallet
+- Built with React, TypeScript, and TailwindCSS
+- Supabase as the backend (PostgreSQL)
+
+![img_3.png](public/images/dashboard.png)
+
+![img_4.png](public/images/admin.png)
+
+![img_1.png](public/images/charts.png)
 
 ## Getting Started
 
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v16+ recommended)
+- [npm](https://www.npmjs.com/)
+- [Supabase account](https://supabase.com/)
+
 ### Installation
 
-Install the dependencies:
+1. **Clone the repository:**
 
-```bash
-npm install
-```
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables:**
+    - Copy `.env.example` to `.env` and fill in your Supabase credentials.
+
+4. **Set up the database:**
+    - Use the provided `schema.md` file to create the necessary tables in your Supabase project.
+    - In the Supabase dashboard, go to SQL Editor and run the contents of `schema.md`.
+    - Add RLS (Row Level Security) to tables in Supabase.
 
 ### Development
 
-Start the development server with HMR:
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Visit [http://localhost:5173](http://localhost:5173) to view the app.
 
-## Building for Production
-
-Create a production build:
+### Building for Production
 
 ```bash
 npm run build
 ```
 
-## Deployment
+## Database Schema
 
-### Docker Deployment
+See [`schema.md`](./schema.md) for the full database structure.
 
-To build and run using Docker:
+## Contributing
 
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
