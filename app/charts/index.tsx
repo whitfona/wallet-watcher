@@ -77,13 +77,6 @@ export function Index() {
     const totalExpenses = mainCategoryData.reduce((sum, category) => sum + category.value, 0)
 
     const [cashflowYear, setCashflowYear] = useState<number>(new Date().getFullYear())
-    const onYearChange = (action: 'increment' | 'decrement') => {
-        if (!cashflowYear) {
-            return
-        }
-
-        action === 'increment' ? setCashflowYear(cashflowYear + 1) : setCashflowYear(cashflowYear - 1)
-    }
 
     const [loadingCashflowData, setLoadingCashflowData] = useState(true)
     const [cashflowData, setCashflowData] = useState<MonthlyCashflowRecord[]>([])
