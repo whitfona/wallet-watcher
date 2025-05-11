@@ -6,6 +6,9 @@ export const formatDate = (date: string) => {
 }
 
 export const formatCurrency = (currency: number | null, decimalPlaces: number = 2) => {
+    if (currency === 0) {
+        return '$0.00'
+    }
     if (!currency) {
         return ''
     }
