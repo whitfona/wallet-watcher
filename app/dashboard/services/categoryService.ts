@@ -198,7 +198,7 @@ export const categorizeExpense = async (expense: ImportedExpense, categories: Se
 
     /**** Apple iCloud ****/
     if (lowerCasePayee.includes('apple bill') &&
-        expense.outflow !== null && expense.outflow === 4.51
+        expense.outflow !== null && expense.outflow == 4.51
     ) {
         if (expense.account.toLowerCase().includes('nick')) {
             return categories.find(category => category.label.toLowerCase().includes('nick apple icloud'))
@@ -270,6 +270,11 @@ export const categorizeExpense = async (expense: ImportedExpense, categories: Se
         return categories.find(category => category.label.toLowerCase().includes('haircut'))
     }
 
+    /**** Hair/Make-Up ****/
+    if (lowerCasePayee.includes('shoppers drug')) {
+        return categories.find(category => category.label.toLowerCase().includes('hair/make'))
+    }
+
     /**** Home Insurance (Dublin Intact) ****/
     if (lowerCasePayee.includes('insurance')) {
         return categories.find(category => category.label.toLowerCase().includes('insurance'))
@@ -293,6 +298,14 @@ export const categorizeExpense = async (expense: ImportedExpense, categories: Se
     /**** Nespresso ****/
     if (lowerCasePayee.includes('nespresso')) {
         return categories.find(category => category.label.toLowerCase().includes('nespresso'))
+    }
+
+    /**** New Clothes/ Shoes ****/
+    if (lowerCasePayee.includes('lululemon') ||
+        lowerCasePayee.includes('aldo') ||
+        lowerCasePayee.includes('h&m')
+    ) {
+        return categories.find(category => category.label.toLowerCase().includes('clothes/ shoes'))
     }
 
     /**** Nick OSAP (NSLSC) ****/
