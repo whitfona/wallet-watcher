@@ -1,49 +1,104 @@
-import type {CategoryExpenseRecord, CategoryValues} from '@/types/common'
+import type {CategoryExpenseRecord, CategoryValues, ImportedExpense, SelectInterface} from '@/types/common'
 
 export const getCategoryType = (categoryName: string): string => {
-    const lowerName = categoryName.toLowerCase()
+    const lowerNameCategory = categoryName.toLowerCase()
 
-    // Food related categories
-    if (lowerName.includes('groceries') ||
-        lowerName.includes('coffee') ||
-        lowerName.includes('tea') ||
-        lowerName.includes('meal') ||
-        lowerName.includes('nespresso') ||
-        lowerName.includes('costco') ||
-        lowerName.includes('food')) {
-        return 'Food'
+    /**** Rent related categories ****/
+    if (lowerNameCategory === 'rent') {
+        return 'Rent'
     }
 
-    // Fun related categories
-    if (lowerName.includes('entertainment') ||
-        lowerName.includes('fun money') ||
-        lowerName.includes('dates') ||
-        lowerName.includes('eating out') ||
-        lowerName.includes('books')) {
-        return 'Fun'
+    /**** Bills related categories ****/
+    if (lowerNameCategory.includes('enbridge') ||
+        lowerNameCategory.includes('phone') ||
+        lowerNameCategory.includes('hydro') ||
+        lowerNameCategory.includes('internet') ||
+        lowerNameCategory.includes('osap') ||
+        lowerNameCategory.includes('insurance') ||
+        lowerNameCategory.includes('bank fee')
+    ) {
+        return 'Bills'
     }
 
-    // Travel related categories
-    if (lowerName.includes('transportation') ||
-        lowerName.includes('bus') ||
-        lowerName.includes('train') ||
-        lowerName.includes('uber') ||
-        lowerName.includes('rental car')) {
-        return 'Travel'
+    /**** Groceries related categories ****/
+    if (lowerNameCategory.includes('groceries') ||
+        lowerNameCategory.includes('meal service') ||
+        lowerNameCategory.includes('nespresso') ||
+        lowerNameCategory.includes('costco')
+    ) {
+        return 'Groceries'
     }
 
-    // Default to Other if no match
-    return 'Other'
+    /**** Health related categories ****/
+    if (lowerNameCategory.includes('gym') ||
+        lowerNameCategory.includes('sweat') ||
+        lowerNameCategory.includes('health') ||
+        lowerNameCategory.includes('supplements') ||
+        lowerNameCategory.includes('exercise')
+    ) {
+        return 'Health'
+    }
+
+    /**** Subscriptions related categories ****/
+    if (lowerNameCategory.includes('sobi') ||
+        lowerNameCategory.includes('website hosting') ||
+        lowerNameCategory.includes('amazon') ||
+        lowerNameCategory.includes('communauto') ||
+        lowerNameCategory.includes('icloud') ||
+        lowerNameCategory.includes('spotify') ||
+        lowerNameCategory.includes('netflix')
+    ) {
+        return 'Subscriptions'
+    }
+
+    /**** Fun Money related categories ****/
+    if (lowerNameCategory.includes('fun money')) {
+        return 'Fun Money'
+    }
+
+    /**** Flexi related categories ****/
+    if (lowerNameCategory.includes('cleaning') ||
+        lowerNameCategory.includes('haircut') ||
+        lowerNameCategory.includes('work reimbursement') ||
+        lowerNameCategory.includes('friend hang') ||
+        lowerNameCategory.includes('dates') ||
+        lowerNameCategory.includes('eating out') ||
+        lowerNameCategory.includes('books') ||
+        lowerNameCategory.includes('decor') ||
+        lowerNameCategory.includes('clothes') ||
+        lowerNameCategory.includes('household good') ||
+        lowerNameCategory.includes('hair/make') ||
+        lowerNameCategory.includes('coffee') ||
+        lowerNameCategory.includes('transportation') ||
+        lowerNameCategory.includes('crafts') ||
+        lowerNameCategory.includes('family gift') ||
+        lowerNameCategory.includes('wedding misc') ||
+        lowerNameCategory.includes('misc')
+    ) {
+        return 'Flexi'
+    }
+
+    /**** Retirement related categories ****/
+    if (lowerNameCategory.includes('retirement')) {
+        return 'Retirement'
+    }
+
+    // Default to No Category if no match
+    return 'No Category'
 }
 
-const MAIN_CATEGORIES = ['Food', 'Fun', 'Travel']
+const MAIN_CATEGORIES = ['Rent', 'Bills', 'Groceries', 'Health', 'Subscriptions', 'Fun Money', 'Flexi', 'Retirement']
 const CATEGORY_COLORS: { [key: string]: string } = {
-    'Food': '#00C49F',  // Green
-    'Fun': '#FFBB28',   // Yellow
-    'Travel': '#0088FE', // Blue
-    'Other': '#8884D8',  // Purple
+    'Rent': '#FFD1DC',
+    'Bills': '#AEC6CF',
+    'Groceries': '#B0E57C',
+    'Health': '#FFB347',
+    'Subscriptions': '#CBAACB',
+    'Fun Money': '#FDFD96',
+    'Flexi': '#B39EB5',
+    'Retirement': '#77DD77',
+    'No Category': '#8884D8',
 }
-// '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'
 
 export const getCategoryTotals = async (expenses: CategoryExpenseRecord[]) => {
     try {
@@ -57,10 +112,8 @@ export const getCategoryTotals = async (expenses: CategoryExpenseRecord[]) => {
             subcategoryTotals[category] = {}
         })
 
-        // TODO: Do we have an 'Other' category or will it just be 'Misc'?
-        // Also initialize Other category
-        mainCategoryTotals['Other'] = {inflow: 0, outflow: 0}
-        subcategoryTotals['Other'] = {}
+        mainCategoryTotals['No Category'] = {inflow: 0, outflow: 0}
+        subcategoryTotals['No Category'] = {}
 
         expenses.forEach(expense => {
             const subcategory = expense.category || 'Unknown'
@@ -98,7 +151,7 @@ export const getCategoryTotals = async (expenses: CategoryExpenseRecord[]) => {
             return {
                 name,
                 value: netValue,
-                color: CATEGORY_COLORS[name] || CATEGORY_COLORS.Other,
+                color: CATEGORY_COLORS[name],
                 subcategories: formattedSubcategories
             }
         })

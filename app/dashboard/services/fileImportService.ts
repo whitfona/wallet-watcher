@@ -1,6 +1,7 @@
 import {read, utils} from 'xlsx'
 import type {ExpenseRecord, ImportCounters, ImportedExpense, SelectInterface} from '@/types/common'
 import React from 'react'
+import {categorizeExpense} from '@/dashboard/services/categoryService'
 
 export const parseExcelFile = async (
     fileContent: string | ArrayBuffer,
@@ -120,7 +121,7 @@ export const processExpense = async (
         }
 
         const duplicate = await checkForDuplicateExpense(expenseToCheck)
-        const category = categories.find((cat) => item.category && cat.label.includes(item.category))
+        const category = await categorizeExpense(item, categories)
 
         if (duplicate) {
             counters.duplicateCount++
