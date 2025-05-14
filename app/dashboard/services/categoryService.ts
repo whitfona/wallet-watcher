@@ -215,6 +215,7 @@ export const categorizeExpense = async (expense: ImportedExpense, categories: Se
     /**** Coffee/Tea (Timmies) ****/
     if (lowerCasePayee.includes('tim hortons') ||
         lowerCasePayee.includes('second cup') ||
+        lowerCasePayee.includes('starbuck') ||
         lowerCasePayee.includes('cafe') ||
         lowerCasePayee.includes('coffee')
     ) {
@@ -322,7 +323,7 @@ export const categorizeExpense = async (expense: ImportedExpense, categories: Se
     if (lowerCasePayee.includes('mutual funds')) {
         return categories.find(category => category.label.toLowerCase().includes('jill retirement'))
     }
-    
+
     /**** Salary ****/
     if (lowerCasePayee.includes('vehikl')) {
         return categories.find(category => category.label.toLowerCase().includes('nick salary'))
