@@ -116,7 +116,7 @@ export const getCategoryTotals = async (expenses: CategoryExpenseRecord[]) => {
         subcategoryTotals['No Category'] = {}
 
         expenses.forEach(expense => {
-            const subcategory = expense.category || 'Unknown'
+            const subcategory = expense.category || 'No Category'
             const mainCategory = getCategoryType(subcategory)
 
             // Update main category totals
@@ -197,7 +197,7 @@ export const categorizeExpense = async (expense: ImportedExpense, categories: Se
     }
 
     /**** Apple iCloud ****/
-    if (lowerCasePayee.includes('apple bill') &&
+    if (lowerCasePayee.includes('apple') &&
         expense.outflow !== null && expense.outflow == 4.51
     ) {
         if (expense.account.toLowerCase().includes('nick')) {
@@ -341,7 +341,7 @@ export const categorizeExpense = async (expense: ImportedExpense, categories: Se
     if (lowerCasePayee.includes('vehikl')) {
         return categories.find(category => category.label.toLowerCase().includes('nick salary'))
     }
-    if (lowerCasePayee.includes('mcmaster univ - payroll deposit')) {
+    if (lowerCasePayee.includes('mcmaster univer - payroll deposit')) {
         return categories.find(category => category.label.toLowerCase().includes('jill salary'))
     }
 
