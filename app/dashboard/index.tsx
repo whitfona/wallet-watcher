@@ -18,6 +18,7 @@ import {useToast} from '@/components/Toast'
 import {useDialogDuplicateExpense} from '@/components/DialogDuplicateExpense'
 import {useExpenseGrid} from '@/dashboard/hooks/useExpenseGrid'
 import {handleFileChange} from '@/dashboard/services/fileImportService'
+import {GoDownload} from 'react-icons/go'
 
 export function Index() {
     ModuleRegistry.registerModules([AllCommunityModule])
@@ -439,6 +440,14 @@ export function Index() {
                             aria-label="File Import"
                         />
                     </button>
+                    <a
+                        className="relative flex items-center gap-1 text-blue-500 hover:text-blue-700 cursor-pointer"
+                        title="['date', 'account', 'payee', 'category', 'memo', 'outflow', 'inflow']"
+                        href="/public/expense_upload_form.csv"
+                    >
+                        <GoDownload className="inline-block w-[16px] h-[16px]"/>
+                        Download Expense Upload Template
+                    </a>
                 </div>
                 {showDeleteButton &&
                     <DialogConfirmButton
