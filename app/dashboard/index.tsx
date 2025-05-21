@@ -94,7 +94,7 @@ export function Index() {
                 .from('expenses_view')
                 .select('*')
                 .gte('date', `${selectedYear}-${selectedMonth}-01`)
-                .lte('date', `${endYear}-${endMonth}-01`)
+                .lt('date', `${endYear}-${endMonth}-01`)
                 .order('date', {ascending: false})
 
             if (fetchError) {
