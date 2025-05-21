@@ -4,7 +4,8 @@ export const getCategoryType = (categoryName: string): string => {
     const lowerNameCategory = categoryName.toLowerCase()
 
     /**** Rent related categories ****/
-    if (lowerNameCategory === 'rent') {
+    const rentRegex = /\brent\b/i
+    if (rentRegex.test(lowerNameCategory)) {
         return 'Rent'
     }
 
