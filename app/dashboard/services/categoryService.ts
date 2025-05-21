@@ -135,7 +135,7 @@ export const getCategoryTotals = async (expenses: CategoryExpenseRecord[]) => {
         // Convert totals into the format needed for the pie chart and detailed breakdown
         const mainCategoryDataArray = Object.entries(mainCategoryTotals).map(([name, values]) => {
             // Calculate net for display
-            const netValue = Math.abs(values.outflow - values.inflow)
+            const netValue = values.outflow - values.inflow
 
             // Convert subcategory data for this main category
             const subcategoryDetails = subcategoryTotals[name] || {}
@@ -145,7 +145,7 @@ export const getCategoryTotals = async (expenses: CategoryExpenseRecord[]) => {
                 formattedSubcategories[subName] = {
                     inflow: subValues.inflow,
                     outflow: subValues.outflow,
-                    net: Math.abs(subValues.outflow - subValues.inflow)
+                    net: subValues.outflow - subValues.inflow
                 }
             })
 
