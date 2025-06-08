@@ -7,7 +7,7 @@ export const parseExcelFile = async (
     fileContent: string | ArrayBuffer,
     accounts: SelectInterface[]
 ): Promise<ImportedExpense[]> => {
-    const workbook = read(fileContent, {type: 'binary'})
+    const workbook = read(fileContent, {type: 'binary', cellDates: true})
     const sheetName = workbook.SheetNames[0]
     const sheet = workbook.Sheets[sheetName]
     const header = ['date', 'account', 'payee', 'category', 'memo', 'outflow', 'inflow']
