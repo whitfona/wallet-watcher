@@ -277,7 +277,7 @@ export const categorizeExpense = async (expense: ImportedExpense, categories: Se
     }
 
     /**** Home Insurance (Dublin Intact) ****/
-    if (lowerCasePayee.includes('insurance')) {
+    if (lowerCasePayee.includes('insurance') || lowerCasePayee.includes('travelers ins')) {
         return categories.find(category => category.label.toLowerCase().includes('insurance'))
     }
 
